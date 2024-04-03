@@ -42,7 +42,9 @@ export default {
     getLoginHistory () {
       fetch('http://8.134.178.176:8080/user/info/login', {
         method: 'GET',
-        headers: { Authorization: 'eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTE2NTk4NDIsInVzZXJpZCI6IjE3Njg1NDYwNDIyNDczMjM2NDkifQ.RFVrImZocfRh-9eROnAWrgIIsRzJvhN9L4CD5yumxOA' }
+        headers: {
+          Authorization: this.$store.state.usertoken
+        }
       })
         .then(response => {
           if (response.ok) {
@@ -65,7 +67,9 @@ export default {
     getUserName () {
       fetch('http://8.134.178.176:8080/user/info', {
         method: 'GET',
-        headers: { Authorization: 'eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTE2NTk4NDIsInVzZXJpZCI6IjE3Njg1NDYwNDIyNDczMjM2NDkifQ.RFVrImZocfRh-9eROnAWrgIIsRzJvhN9L4CD5yumxOA' }
+        headers: {
+          Authorization: this.$store.state.usertoken
+        }
       })
         .then(res => {
           return res.json()

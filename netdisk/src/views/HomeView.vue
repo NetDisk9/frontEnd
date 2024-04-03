@@ -68,12 +68,19 @@ export default {
       userInfo: {
         avatar: '',
         username: '',
-        id: ''
+        id: '',
+        // 获取用户token
+        usertoken: ''
       },
       newNickname: '',
       userId: '123456',
       selectedLink: 0
     }
+  },
+  // 创建页面的时候就进行token得获取
+  created () {
+    console.log(this.$store.state.usertoken)
+    this.usertoken = this.$store.state.usertoken
   },
   methods: {
     changeShow (index) {
@@ -84,7 +91,7 @@ export default {
       fetch('http://8.134.178.176:8080/user/info', {
         method: 'GET',
         headers: {
-          Authorization: 'eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTIwMDQxNzEsInVzZXJpZCI6IjE3NzI1MjY3NTYzNDI4ODIzMDYifQ.c33kl9JlhCnUgrg81v9O6jPUwBKG5GRPccvxD22JHZI'
+          Authorization: this.$store.state.usertoken
         }
       })
         .then(response => {
@@ -148,7 +155,7 @@ export default {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTIwMDQxNzEsInVzZXJpZCI6IjE3NzI1MjY3NTYzNDI4ODIzMDYifQ.c33kl9JlhCnUgrg81v9O6jPUwBKG5GRPccvxD22JHZI'
+          Authorization: this.$store.state.usertoken
         },
         body: JSON.stringify(requestBody)
       })

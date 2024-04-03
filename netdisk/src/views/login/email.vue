@@ -201,9 +201,10 @@ export default {
           )
           console.log(res)
           if (res.data.code === 200) {
-            localStorage.setItem('tok', res.data.data)
+            // localStorage.setItem('tok', res.data.data)
             //  将token存入localstorage
-            console.log(localStorage.getItem('tok'))
+            this.$store.commit('gettoken', res.data.data)
+            // console.log(localStorage.getItem('tok'))
             this.$message({
               message: '登陆成功',
               type: 'success',

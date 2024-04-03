@@ -184,9 +184,12 @@ export default {
           )
           console.log(res)
           if (res.data.code === 200) {
-            localStorage.setItem('tok', res.data.data)
+            // localStorage.setItem('tok', res.data.data)
+            // 登陆成功后获取token存入vuex
+            this.$store.commit('gettoken', res.data.data)
+            // console.log(this.$store.state.usertoken)
             //  将token存入localstorage
-            console.log(localStorage.getItem('tok'))
+            // console.log(localStorage.getItem('tok'))
             this.$message({
               message: '登陆成功',
               type: 'success',

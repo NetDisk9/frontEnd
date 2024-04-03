@@ -36,7 +36,7 @@ export default {
       fetch('http://8.134.178.176:8080/user/login/method', {
         method: 'GET',
         headers: {
-          Authorization: 'eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTIwMTAwMjEsInVzZXJpZCI6IjE3NzI1MjY3NTYzNDI4ODIzMDYifQ.mJSxmUB_VFsH0Pi7qEp65Kn-csj8CZgo_GlqE4MTzDM' // Replace with actual token
+          Authorization: this.$store.state.usertoken
         }
       })
         .then(response => {
@@ -79,7 +79,7 @@ export default {
       const requestOptions = {
         method: 'PUT',
         headers: {
-          Authorization: 'eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTE1ODg0MTQsInVzZXJpZCI6IjE3NzI1MjY3NTYzNDI4ODIzMDYifQ.jhJ9vWRrDhnQtO7wtvUQxxx2fznesub_tCu8z6WrMLg' // 用实际的Authorization token替换
+          Authorization: this.$store.state.usertoken
         },
         body: JSON.stringify({ type: this.type }) // 将queryParams替换为this.type
       }

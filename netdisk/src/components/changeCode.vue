@@ -20,7 +20,8 @@ export default {
     return {
       originalPassword: '',
       newPassword: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      usertoken: ''
     }
   },
   computed: {
@@ -40,7 +41,7 @@ export default {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTIwMDQxNzEsInVzZXJpZCI6IjE3NzI1MjY3NTYzNDI4ODIzMDYifQ.c33kl9JlhCnUgrg81v9O6jPUwBKG5GRPccvxD22JHZI' // 替换为实际的 Authorization token
+          Authorization: this.$store.state.usertoken
         },
         body: JSON.stringify(requestBodyForCode)
       })
