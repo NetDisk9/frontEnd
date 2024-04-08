@@ -34,7 +34,7 @@
       </div>
       <div id="gap"></div>
       <div id="area3">
-        <div style="display: flex; justify-content: flex-end; align-items: center; margin: 20px 5px 20px 20px">
+        <div style="display: flex; justify-content: center; align-items: center; margin: 20px 5px 20px 20px">
           <div style="display: flex; justify-content: center; align-items: center;">
             <div id="avatar-preview" :style="{backgroundImage: 'url(' + avatarPreviewUrl + ')'}"/>
           </div>
@@ -45,12 +45,10 @@
         </div>
 
         <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
-          <div style="display: flex; justify-content: flex-end; width: 100%" >
-            <div id="nickname" style="display: flex; margin-right: 5px">昵称
-              <div id="nickname-edit" @click="handleNicknameEdit" style="font-size: 16px; margin: 0 0 0 28px">修改</div>
-            </div>
+          <div style="display: flex; justify-content: center; align-items:center; width: 100%" >
+            <div id="nickname" style="display: flex; justify-content: center; margin-left: 20px">昵称</div>
+            <div id="nickname-edit" @click="handleNicknameEdit" style="font-size: 16px;">修改</div>
           </div>
-
           <div id="user-id" style="display: flex">user_id</div>
         </div>
       </div>
@@ -212,8 +210,9 @@ body {
   border-bottom: 2px solid black;
 }
 .logo {
-  width:170px ;
-  height: 70px;
+  width:160px ;
+  height: 50px;
+  margin-top: 10px;
   margin-left: 2%;
   margin-bottom: -2.35%;
   background-image: url('../assets/logo2.png');
@@ -285,19 +284,19 @@ nav ul li:nth-child(5) a {
   background-image: url('@/assets/登录方式.png');
 }
 #avatar-preview {
-  display: flex;
-  justify-content: center;
   width: 90px;
   height: 90px;
   border-radius: 50%;
   background-color: #ccc;
   background-size: cover;
   background-position: center;
+  position: relative;
+  left: 0;
+  bottom: 0;
 }
 .upload-container {
   display: flex;
-  justify-content: center;
-  margin-left: 10px;
+  margin-left: auto;
 }
 #avatar-upload {
   color: #2881F6;
@@ -308,6 +307,7 @@ nav ul li:nth-child(5) a {
   color: black;
   font-size: 20px;
   font-weight: bold;
+  width: 40px;
 }
 
 #nickname-edit {
@@ -317,10 +317,16 @@ nav ul li:nth-child(5) a {
 }
 
 #user-id {
-  margin: auto;
+  margin: 10px;
   color: black;
   font-size: 16px;
   font-weight: bold;
+  position: relative;
+  left: 0;
+  bottom: 0;
+  top: 0;
+  right: 0;
+  width: auto;
 }
 #avatar-input {
   display: none; /* Hide the file input */
