@@ -1,7 +1,8 @@
 <template>
+  <!-- 个人中心界面 -->
   <div>
     <div id="top-bar">
-      <img id="logo" src="@/assets/logo.png" alt="Logo">
+      <div class="logo"></div>
     </div>
     <div id="divider"></div>
     <div id="content">
@@ -9,10 +10,10 @@
         <nav>
           <ul>
             <li><a @click="changeShow(0)">个人中心</a></li>
-            <li><a>更改密码</a></li>
+            <li><a @click="changeShow(3)">更改密码</a></li>
             <li><a @click="changeShow(1)">登录记录</a></li>
             <li><a @click="changeShow(2)">登录设备</a></li>
-            <li><a>登录方式</a></li>
+            <li><a @click="changeShow(4)">登录方式</a></li>
           </ul>
         </nav>
       </div>
@@ -23,6 +24,12 @@
         </div>
         <div v-if="show===2" style="overflow: auto">
           <Devices/>
+        </div>
+        <div v-if="show===3" style="overflow: auto">
+          <changeCode/>
+        </div>
+        <div v-if="show===4" style="overflow: auto">
+          <loginMethods/>
         </div>
       </div>
       <div id="gap"></div>
@@ -194,71 +201,64 @@ body {
   background-color: white;
   font-family: Arial, sans-serif;
 }
-
 #top-bar {
   min-height: 65px;
   width: 100%;
   height: 65px;
   background-color: white;
 }
-
 #divider {
   width: 100%;
   border-bottom: 2px solid black;
 }
-
-#logo {
-  width: 182px;
-  height: 50px;
+.logo {
+  width:170px ;
+  height: 70px;
   margin-left: 2%;
   margin-bottom: -2.35%;
+  background-image: url('../assets/logo2.png');
+  background-size:100% 100% ;
 }
-
 #content {
   width: 100%;
   display: flex;
   justify-content: space-between;
   height: 100vh;
-
 }
-
 .area {
   height: 100%;
   display: flex;
   justify-content: center;
   position: relative;
 }
-
 #area1 {
   min-width: 180px;
   width: 180px;
   background-color: white;
 }
-
 #area2 {
   width: 64%;
   background-color: white;
 }
-
 #area3 {
   width: 160px;
+  min-width: 160px;
   background-color: white;
 }
-
 #gap {
   width: 3%;
   background-color: #F2F4FA;
 }
-
 nav ul {
   padding: 0;
   margin: 0;
   list-style-type: none;
 }
-
 nav ul li a {
   display: block;
-  padding: 27px 13px 13px 40px;
+  padding: 13px;
+  padding-left: 40px;
+  padding-top: 27px;
   color: #4E5969;
   text-decoration: none;
   font-size: 20px;
@@ -266,31 +266,24 @@ nav ul li a {
   margin-right: 5px;
   background-size: 25px;
   background-repeat: no-repeat;
-  background-position: -2px 28px;
+  background-position: -2px 28px ;
 }
-
 /* Define different icons for each navigation item */
 nav ul li:nth-child(1) a {
   background-image: url('@/assets/个人中心.png');
 }
-
 nav ul li:nth-child(2) a {
   background-image: url('@/assets/更改密码.png');
 }
-
 nav ul li:nth-child(3) a {
   background-image: url('@/assets/登陆记录.png');
 }
-
 nav ul li:nth-child(4) a {
   background-image: url('@/assets/登录设备.png');
 }
-
 nav ul li:nth-child(5) a {
   background-image: url('@/assets/登录方式.png');
 }
-
-
 #avatar-preview {
   display: flex;
   justify-content: center;
@@ -301,19 +294,16 @@ nav ul li:nth-child(5) a {
   background-size: cover;
   background-position: center;
 }
-
 .upload-container {
   display: flex;
   justify-content: center;
   margin-left: 10px;
 }
-
 #avatar-upload {
   color: #2881F6;
   cursor: pointer;
   width: 32px;
 }
-
 #nickname {
   color: black;
   font-size: 20px;
@@ -332,18 +322,15 @@ nav ul li:nth-child(5) a {
   font-size: 16px;
   font-weight: bold;
 }
-
 #avatar-input {
   display: none; /* Hide the file input */
 }
-
 nav ul li a.selected {
   color: blue; /* 改变选中链接的文本颜色 */
 }
-
 /* 在选中链接下方添加小箭头 */
 nav ul li a.selected::after {
-
+  content: ""; /* 添加伪元素 */
   display: block; /* 将伪元素设为块级元素 */
   width: 0;
   height: 0;
@@ -355,5 +342,32 @@ nav ul li a.selected::after {
   left: 50%; /* 将小箭头水平居中 */
   transform: translateX(-50%); /* 将小箭头水平居中 */
   content: '';
+}
+.middleBox {
+  margin: 50px auto;
+  width: 60%;
+  height: 600px;
+  /* background-color: #f2f2f2; */
+  /* border: 2px solid red; */
+  border-radius: 10px;
+  padding: 20px;
+  box-sizing: border-box;
+  margin-right: 250px;
+}
+/* 内容样式 */
+.contentmima {
+  padding-left: 5%;
+}
+/* 标题样式 */
+h2 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+h3 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #333;
+  font-weight: lighter;
 }
 </style>
