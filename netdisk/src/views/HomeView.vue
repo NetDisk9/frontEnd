@@ -1,6 +1,6 @@
 <template>
   <!-- 个人中心界面 -->
-  <div>
+  <div style="height: 100vh; overflow: hidden">
     <div id="top-bar">
       <div class="logo"></div>
     </div>
@@ -19,18 +19,10 @@
       </div>
       <div id="gap"></div>
       <div id="area2" class="area">
-        <div v-if="show===1" style="overflow: auto">
-          <EnterHistory/>
-        </div>
-        <div v-if="show===2" style="overflow: auto">
-          <Devices/>
-        </div>
-        <div v-if="show===3" style="overflow: auto">
-          <changeCode/>
-        </div>
-        <div v-if="show===4" style="overflow: auto">
-          <loginMethods/>
-        </div>
+          <EnterHistory v-if="show===1"/>
+          <Devices v-if="show===2"/>
+          <changeCode v-if="show===3"/>
+          <loginMethods v-if="show===4"/>
       </div>
       <div id="gap"></div>
       <div id="area3">
@@ -197,7 +189,8 @@ body {
   margin: 0;
   padding: 0;
   background-color: white;
-  font-family: Arial, sans-serif;
+  font-family: "Microsoft YaHei", sans-serif;
+  height: 100%;
 }
 #top-bar {
   min-height: 65px;
@@ -207,13 +200,13 @@ body {
 }
 #divider {
   width: 100%;
-  border-bottom: 2px solid black;
+  border-bottom: 15px solid #F2F4FA;
 }
 .logo {
-  width:160px ;
+  width:182px ;
   height: 50px;
   margin-top: 10px;
-  margin-left: 2%;
+  margin-left: 20px;
   margin-bottom: -2.35%;
   background-image: url('../assets/logo2.png');
   background-size:100% 100% ;
@@ -223,9 +216,10 @@ body {
   display: flex;
   justify-content: space-between;
   height: 100vh;
+  border-radius: 10px;
 }
 .area {
-  height: 100%;
+  height: 100vh;
   display: flex;
   justify-content: center;
   position: relative;
@@ -234,18 +228,21 @@ body {
   min-width: 180px;
   width: 180px;
   background-color: white;
+  border-radius: 10px;
 }
 #area2 {
   width: 64%;
   background-color: white;
+  border-radius: 10px;
 }
 #area3 {
   width: 160px;
   min-width: 160px;
   background-color: white;
+  border-radius: 10px;
 }
 #gap {
-  width: 3%;
+  width: 15px;
   background-color: #F2F4FA;
 }
 nav ul {
