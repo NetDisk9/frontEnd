@@ -83,8 +83,8 @@ html {
 }
 
 .container {
-  width: 100%;
-  height: auto;
+  width: 990px;
+  max-height: 700px;
 }
 
 .title {
@@ -109,8 +109,8 @@ html {
 }
 
 .container_table {
-  width: auto;
-  height: auto;
+  width: 895px;
+  height: 700px;
   font-family: Arial, sans-serif;
   position: relative;
   /* left: 50px; */
