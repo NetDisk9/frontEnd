@@ -83,7 +83,7 @@ export default {
 }
 </script>
 
-    <style>
+    <style scoped>
             .middleBox {
         margin: 50px auto;
         width: 60%;

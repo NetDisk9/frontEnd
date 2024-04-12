@@ -5,6 +5,8 @@ import account from '@/views/login/account.vue'
 import email from '@/views/login/email.vue'
 import home from '@/views/login/home.vue'
 import HomeView from '@/views/HomeView.vue'
+import adminPage from '@/views/admin/index.vue'
+import userPage from '@/views/admin/user.vue'
 Vue.use(VueRouter)
 
 const router = new VueRouter({
@@ -36,6 +38,18 @@ const router = new VueRouter({
     {
       path: '/homeview',
       component: HomeView
+    },
+    {
+      path: '/admin',
+      component: adminPage,
+      redirect: '/admin/userpage',
+      children: [
+        {
+          path: '/admin/userPage',
+          component: userPage
+        }
+      ]
+
     }
 
   ]
