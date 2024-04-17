@@ -1,118 +1,144 @@
 <template>
-    <div>
-      <el-breadcrumb separator-class="el-icon-arrow-right">
-        <!-- 点击可以跳转到首页 这里首页就是用户管理页面 -->
-        <el-breadcrumb-item :to="{ path: '/admin' }">首页</el-breadcrumb-item>
-        <el-breadcrumb-item>用户管理</el-breadcrumb-item>
-      </el-breadcrumb><br>
+  <div>
+    <el-breadcrumb separator-class="el-icon-arrow-right">
+      <!-- 点击可以跳转到首页 这里首页就是用户管理页面 -->
+      <el-breadcrumb-item :to="{ path: '/admin' }">首页</el-breadcrumb-item>
+      <el-breadcrumb-item>用户管理</el-breadcrumb-item>
+    </el-breadcrumb><br>
 
-      <!-- 下面栏目用于搜索功能 -->
-      <el-form :inline="true" :model="formInline" class="user-search">
-        <el-form-item label="搜索：">
-            <!-- 这里进行帐号是否正常进行筛选需要调用后期接口 -->
-          <el-select size="small" v-model="formInline.isLock" placeholder="请选择">
-            <el-option label="全部" value=""></el-option>
-            <el-option label="正常" value="N"></el-option>
-            <el-option label="已锁定" value="Y"></el-option>
-          </el-select>
+    <!-- 下面栏目用于搜索功能 -->
+    <el-form :inline="true" :model="formInline" class="user-search">
+      <el-form-item label="搜索：">
+          <!-- 这里进行帐号是否正常进行筛选需要调用后期接口 -->
+        <el-select size="small" v-model="formInline.isLock" placeholder="请选择">
+          <el-option label="全部" value=""></el-option>
+          <el-option label="正常" value="N"></el-option>
+          <el-option label="已锁定" value="Y"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="">
+        <el-input size="small" v-model="searchUserName" placeholder="输入用户名"></el-input>
+      </el-form-item>
+      <el-form-item label="">
+      <el-input size="small" v-model="searchUserEmail" placeholder="输入邮箱号"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button size="small" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
+        <el-button size="small" type="primary" icon="el-icon-plus"  @click="add" style="margin-left: 10px;">添加</el-button>
+            <!-- 对话框 -->
+    <el-dialog
+      title="添加用户"
+      :visible.sync="dialogVisible"
+      width="30%"
+      center
+    >
+      <!-- 输入框 -->
+      <el-form :model="newUser" label-width="80px">
+        <el-form-item label="用户名">
+          <el-input v-model="newUser.userName" placeholder="请输入用户名"></el-input>
         </el-form-item>
-        <el-form-item label="">
-          <el-input size="small" v-model="formInline.userName" placeholder="输入用户名"></el-input>
+        <el-form-item label="用户ID">
+          <el-input v-model="newUser.userId" placeholder="请输入用户ID"></el-input>
         </el-form-item>
-        <el-form-item label="">
-          <el-input size="small" v-model="formInline.userMobile" placeholder="输入手机号"></el-input>
+        <el-form-item label="用户邮箱">
+          <el-input v-model="newUser.userEmail" placeholder="请输入用户邮箱"></el-input>
         </el-form-item>
-        <el-form-item>
-          <el-button size="small" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
-          <el-button size="small" type="primary" icon="el-icon-plus" @click="add">添加</el-button>
-          <el-button size="small" type="primary">部门设置</el-button>
+        <el-form-item label="用户类型">
+          <el-input v-model="newUser.userRealName" placeholder="管理员/普通用户"></el-input>
         </el-form-item>
       </el-form>
 
-      <!-- 用户表格的渲染 -->
-      <!-- 这里的data绑定的是下面data中的usertabledata，后期这个usertabledata需要调用接口渲染 -->
-      <!-- 下面使用了slice方法决定点击改变页面的时候渲染哪一部分数据，由我们点击的页面和每一页显示的页面条数有关 -->
-      <el-table size="small" @selection-change="selectChange"  :data="userTableData.slice((currentPage-1)*pagesize,currentPage*pagesize)" style="width: 100%;">
-        <el-table-column align="center" type="selection" width="50">
-        </el-table-column>
+      <!-- 确定和取消按钮 -->
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="addUser">确定</el-button>
+      </span>
+    </el-dialog>
+        <el-button size="small" type="primary" style="margin-left: 10px;">部门设置</el-button>
+      </el-form-item>
+    </el-form>
 
-        <el-table-column align="center" sortable prop="userName" label="用户名" width="120">
-        </el-table-column>
+ <!-- 内容区域表格 -->
+    <el-table size="small" @selection-change="selectChange"  :data="userTableData.slice((currentPage-1)*pagesize,currentPage*pagesize)" style="width: 100%;">
+        <!-- <el-table-column align="center" type="selection" width="50">
+        </el-table-column> -->
+
+        <el-table-column label="用户名" prop="username">
+  <template slot-scope="scope">
+    <div v-if="!scope.row.editing" @dblclick="toggleEdit(scope.row)">
+      {{ scope.row.username }}
+    </div>
+    <el-input v-else v-model="scope.row.username" @blur="saveChanges(scope.row)" clearable></el-input>
+  </template>
+</el-table-column>
 
         <el-table-column align="center" sortable prop="userId" label="用户ID" width="120">
         </el-table-column>
 
-        <el-table-column align="center" sortable prop="userEmail" label="邮件" min-width="120">
+        <el-table-column align="center" sortable prop="email" label="邮件" min-width="120">
         </el-table-column>
 
-        <!-- 这里的最近登陆时间一般后端传递的是时间戳，所以可以使用方法进行转换成我们看的时间类型 -->
-        <el-table-column align="center" sortable prop="editTime" label="最近登陆时间" min-width="120">
-            <!-- 处理时间为使其可读性变高 -->
-            <!-- 在methods中定义了一个转化时间戳为常规时间的函数在下面进行调用 -->
-          <template slot-scope="scope">
-            <div>{{ formatDate(scope.row.editTime) }}</div>
-          </template>
+        <el-table-column align="center" sortable prop="loginTime" label="最近登陆时间" min-width="120">
         </el-table-column>
 
-        <el-table-column align="center" sortable prop="isLock" label="状态" min-width="120">
+        <el-table-column align="center" sortable prop="status" label="状态" min-width="120">
           <template slot-scope="scope">
             <!-- 进行判断状态的改变点击后会把islock转化为n或者y然后控制是否显示 -->
-            <el-switch :value="scope.row.isLock === 'N' ? nshow : fshow" active-color="#13ce66" inactive-color="#ff4949" @change="editType(scope.$index, scope.row)">
+            <el-switch :value="scope.row.status === 0 ? nshow : fshow" active-color="#13ce66" inactive-color="#ff4949" @change="editType(scope.$index, scope.row)">
             </el-switch>
           </template>
         </el-table-column>
 
-        <el-table-column align="center" sortable prop="userRealName" label="用户类型" width="140">
+<!-- 修改用户类型 -->
+          <el-table-column align="center" sortable prop="roleVO.roleName" label="用户类型" width="150">
   <template slot-scope="scope">
-    <!-- 使用slot把roleid传送过来然后进行选择 -->
-    <el-select v-model="scope.row.userRealName" placeholder="请选择" @change="editUserRole(scope.row)">
-      <el-option label="普通用户" value="1"></el-option>
-      <el-option label="管理员" value="2"></el-option>
-      <!-- 其他选项 -->
+    <!-- 下拉框通过插槽绑定数据确认刚开始的值 -->
+    <!-- 这个scoped.row必须存在代表着这一行的值 -->
+    <!-- 这个row是整一行的数据就是包括username都有 -->
+    <!-- v-model绑定的是用户的roleid这样子修改的时候就会把表格的roleid就会改变，就可以传递roleid给后端 -->
+    <!-- 每次切换数据的时候这个roleid会发生变换，这时候我们需要传递到后端使rolename也发生变化 -->
+    <el-select v-model="scope.row.roleVO.roleId" placeholder="请选择" @change="editUserRole(scope.row)">
+      <!-- 根据每个管理员的权限进行修改 -->
+      <el-option v-for="role in rolelist" :key="role.roleId" :label="role.roleName" :value="role.roleId"></el-option>
     </el-select>
   </template>
 </el-table-column>
 
-        <el-table-column label="操作" min-width="150" align="center" >
-            <!-- 使用插槽解决了数据传输，因为表格内还放了一个按钮组件所以我们需要用到插槽进行组件中的数据传递-->
-        <template slot-scope="scope">
-            <!-- 这里scope.$index, scope.row两个数据就相当于当前行的索引以及当前行的数据，之后可以通过访问scope.row来访问这一行的所有数据 -->
-          <el-button size="mini" type="success" @click="resetpwd(scope.$index, scope.row)">重置密码</el-button>
-        </template>
-      </el-table-column>
-
-      </el-table><br>
-    <!-- 分页 -->
-    <!--
-        @size-change //  pageSize 改变时会触发 每页条数
-        @current-change //  currentPage 改变时会触发 当前页
-        :current-page //  默认false
-        background//  是否为分页按钮添加背景色
-        :page-sizes // 每页显示个数选择器的选项设置 这是下拉框可以选择的，每选择一行，要展示多少内容 类似：[10, 20, 30, 40, 50, 100]
-        page-sizes=显示当前行的条数
-        layout // 组件布局，子组件名用逗号分隔
-       :total // 总条目数,一般从展示列表的总数获取，这里我们从table中获取
-       后期可以封装成组件，但是需要进行双向绑定
-     -->
-     <el-pagination
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-      :current-page="currentPage"
-      background
-      :page-sizes="[1,3,5,10]"
-      :page-size="pagesize"
-      layout="total, sizes,  prev, pager, next, jumper"
-      :total="userTableData.length">
-    </el-pagination>
-
-    </div>
-  </template>
-
+      <el-table-column label="操作" min-width="150" align="center" >
+          <!-- 使用插槽解决了数据传输，因为表格内还放了一个按钮组件所以我们需要用到插槽进行组件中的数据传递-->
+      <template slot-scope="scope">
+          <!-- 这里scope.$index, scope.row两个数据就相当于当前行的索引以及当前行的数据，之后可以通过访问scope.row来访问这一行的所有数据 -->
+        <el-button size="mini" type="success" @click="resetpwd(scope.$index, scope.row)">重置密码</el-button>
+      </template>
+    </el-table-column>
+    </el-table><br>
+     <!-- 分页组件 -->
+   <el-pagination
+    @size-change="handleSizeChange"
+    @current-change="handleCurrentChange"
+    :current-page="currentPage"
+    background
+    :page-sizes="[1,3,5,10]"
+    :page-size="pagesize"
+    layout="total, sizes,  prev, pager, next, jumper"
+    :total="userTableData.length">
+  </el-pagination>
+  </div>
+</template>
 <script>
+import { getrole } from '@/api/admin'
 export default {
   name: 'userPage',
   data () {
     return {
+      dialogVisible: false, // 控制对话框显示状态
+      newUser: { // 新用户信息对象
+        userName: '',
+        userId: '',
+        userEmail: ''
+      },
+      // 修改权限列表
+      rolelist: [],
       // 模拟用户数据存储
       userTableData: [],
       // 初始页
@@ -131,8 +157,11 @@ export default {
         userMobile: '',
         isLock: ''
       },
+      searchUserName: '',
+      searchUserEmail: '',
+
       editForm: {
-        // 用户id
+      // 用户id
         userId: '',
         // 用户名
         userName: '',
@@ -140,21 +169,38 @@ export default {
         userRealName: '',
         // 用户邮箱
         userEmail: ''
-      },
-      // 重置密码需要的参数后期点击重置密码需要token进行操作
-      resetpsd: {
-        userId: '',
-        token: localStorage.getItem('logintoken')
       }
+      // 重置密码需要的参数后期点击重置密码需要token进行操作
+      // resetpsd: {
+      //   userId: '',
+      //   token: localStorage.getItem('logintoken')
+      // }
 
     }
   },
-  created () {
-    this.getdata(this.formInline)
+  async created () {
+    // this.getdataTest(this.formInline) // 测试版本，写死数据
+    // this.getdata(this.formInline)   //上线版本，从后端拿数据
+    const Authorization = this.$store.state.usertoken
+    this.getData() // 上线版本，从后端拿数据
+    // 获取可修改权限类型
+    const { data } = await getrole(Authorization)
+    // console.log(Authorization)
+    this.rolelist = data.data
+    console.log(this.rolelist)
+    // const userId = '1772526756342882306'
+    // this.changepassword(userId)
+    // const res2 = await changeRole(userId, roleId, Authorization)
+    // console.log(666, res2)
+    // const res3 = await resetPassword(Authorization, userId)
+    // console.log(5555, res3)
   },
 
   methods: {
-
+    toggleEdit (row) {
+    // 动态添加 editing 属性
+      this.$set(row, 'editing', true)
+    },
     // 初始页currentPage、初始每页数据数pagesize和数据data
     handleSizeChange: function (size) {
       this.pagesize = size
@@ -165,62 +211,76 @@ export default {
       this.currentPage = currentPage
       console.log(this.currentPage) // 点击第几页
     },
-    // 处理时间戳函数
-    formatDate (timestamp) {
-      const date = new Date(timestamp)
-      const year = date.getFullYear()
-      const month = (date.getMonth() + 1).toString().padStart(2, '0')
-      const day = date.getDate().toString().padStart(2, '0')
-      const hours = date.getHours().toString().padStart(2, '0')
-      const minutes = date.getMinutes().toString().padStart(2, '0')
-      const seconds = date.getSeconds().toString().padStart(2, '0')
-      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-    },
-    search () {
-      // 实现搜索功能
-    },
-    add () {
-      // 实现添加功能
-    },
-    selectChange () {
-      // 实现选择改变功能
-    },
-    editType (index, row) {
-    // 根据当前状态切换开关值
-      row.isLock = row.isLock === 'N' ? 'Y' : 'N'
-
-      // 接下来你可以在这里执行一些其他的操作，比如保存修改后的数据到服务器
-
-      // 如果你想要立即更新到服务器，可以调用一个保存数据的方法，例如：
-      // this.saveData(row);
-
-    // 你也可以在保存数据成功后更新视图，例如：
-    // this.$message.success('状态修改成功');
-    },
-
-    // 如果你想要立即更新到服务器，可以添加一个保存数据的方法
-    // saveData(row) {
-    //   // 调用保存数据的接口，将修改后的数据发送给服务器
-    //   // 这里是一个示例，具体实现根据你的需求和后端接口来确定
-    //   saveDataToServer(row).then(() => {
-    //     this.$message.success('状态修改成功');
-    //   }).catch(error => {
-    //     this.$message.error('保存数据失败：' + error.message);
-    //     // 如果保存失败，可能需要将状态还原到之前的状态
-    //     // 这取决于你的业务逻辑和用户体验需求
-    //     row.isLock = row.isLock === 'N' ? 'Y' : 'N';
-    //   });
+    // // 处理时间戳函数
+    // formatDate (timestamp) {
+    //   const date = new Date(timestamp)
+    //   const year = date.getFullYear()
+    //   const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    //   const day = date.getDate().toString().padStart(2, '0')
+    //   const hours = date.getHours().toString().padStart(2, '0')
+    //   const minutes = date.getMinutes().toString().padStart(2, '0')
+    //   const seconds = date.getSeconds().toString().padStart(2, '0')
+    //   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
     // },
 
-    // 重置密码 index索引暂时用不到
+    // computed: {
+    // // 根据搜索条件过滤后的用户数据
+    //   filteredUserTableData () {
+    //     const { isLock, userName, userMobile } = this.formInline
+
+    //     // 过滤条件：帐号状态、用户名、手机号都符合搜索框中的值才会显示
+    //     return this.userTableData.filter(user => {
+    //       const isLockMatch = !isLock || user.isLock === isLock
+    //       const userNameMatch = !userName || user.userName.includes(userName)
+    //       const userMobileMatch = !userMobile || user.userMobile.includes(userMobile)
+    //       return isLockMatch && userNameMatch && userMobileMatch
+    //     })
+    //   }
+    // },
+    selectChange () {},
+    // 修改用户名失去焦点后保存函数，并对输入框的数值进行检验
+    saveChanges (row) {
+      // 验证用户名格式
+      const username = row.username.trim() // 删除可能存在的首尾空格
+      const usernameRegex = /^[\u4e00-\u9fa5a-zA-Z0-9]{1,14}$/ // 匹配汉字、大小写英文字母和数字，长度不超过14位
+      const pureNumberRegex = /^\d+$/ // 纯数字的正则表达式
+
+      if (!username) {
+        this.$message.error('用户名不能为空')
+        return
+      }
+
+      if (!usernameRegex.test(username)) {
+        this.$message.error('用户名格式错误')
+        return
+      }
+
+      if (pureNumberRegex.test(username)) {
+        this.$message.error('用户名不能为纯数字')
+        return
+      }
+
+      this.$delete(row, 'editing')
+      this.changeInfo(row.status, row.userId, username)
+    },
+
+    // 切换用户状态函数
+    editType (index, row) {
+    // 根据当前状态切换状态值
+      row.status = row.status === 0 ? 1 : 0
+      // 在这里可以添加发送请求更新用户状态的逻辑
+      this.changeInfo(row.status, row.userId)
+      console.log(row)
+    },
     resetpwd (index, row) {
-      // 后期需要用到用户id进行重置
-      this.resetpsd.userId = row.userId
+    // 后期需要用到用户id进行重置
+      // this.resetpsd.userId = row.userId
       this.$confirm('确定要重置密码吗?', '信息', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
+        this.changepassword(row.userId)
         this.$message({
           type: 'success',
           message: '重置成功!'
@@ -231,292 +291,232 @@ export default {
           message: '已取消重置'
         })
       })
-    //   这里是未来进行接口的封装需要使用到当行的数据进行传递操作
-      // .then(() => {
-      //   userPwd(this.resetpsd)
-      //     .then(res => {
-      //       if (res.success) {
-      //         this.$message({
-      //           type: 'success',
-      //           message: '重置密码成功！'
-      //         })
-      //         this.getdata(this.formInline)
-      //       } else {
-      //         this.$message({
-      //           type: 'info',
-      //           message: res.msg
-      //         })
-      //       }
-      //     })
-      //     .catch(err => {
-      //       this.loading = false
-      //       this.$message.error('重置密码失败，请稍后再试！')
-      //     })
-      // })
-      // .catch(() => {
-      //   this.$message({
-      //     type: 'info',
-      //     message: '取消重置密码！'
-      //   })
-      // })
     },
-    getdata (parameter) {
-      this.loading = true
-      // 模拟数据开始
-      const res = {
-        code: 0,
-        msg: null,
-        count: 16,
-        data: [
-          {
-            // 时间
-            editTime: 1527411068000,
-            // 用户id
-            userId: 1,
-            // 用户姓名
-            userName: 'root',
-            // 身份
-            userRealName: '管理员',
-            // 手机号
-            userMobile: '138123456789',
-            // 邮箱
-            userEmail: '111@qq.com',
-            // 帐号状态
-            isLock: 'N'
-          },
-          {
-            editTime: 1527410579000,
-            userId: 3,
-            userName: 'zengzhuo',
-            userRealName: '普通用户',
-            userMobile: '18616988966',
-            userEmail: '222@qq.com',
-            isLock: 'N'
-          },
-          {
-            // 时间
-            editTime: 1527411068000,
-            // 用户id
-            userId: 1,
-            // 用户姓名
-            userName: 'root',
-            // 身份
-            userRealName: '管理员',
-            // 手机号
-            userMobile: '138123456789',
-            // 邮箱
-            userEmail: '111@qq.com',
-            // 帐号状态
-            isLock: 'N'
-          },
-          {
-            editTime: 1527410579000,
-            userId: 3,
-            userName: 'zengzhuo',
-            userRealName: '普通用户',
-            userMobile: '18616988966',
-            userEmail: '222@qq.com',
-            isLock: 'N'
-          }, {
-            // 时间
-            editTime: 1527411068000,
-            // 用户id
-            userId: 1,
-            // 用户姓名
-            userName: 'root',
-            // 身份
-            userRealName: '管理员',
-            // 手机号
-            userMobile: '138123456789',
-            // 邮箱
-            userEmail: '111@qq.com',
-            // 帐号状态
-            isLock: 'N'
-          },
-          {
-            editTime: 1527410579000,
-            userId: 3,
-            userName: 'zengzhuo',
-            userRealName: '普通用户',
-            userMobile: '18616988966',
-            userEmail: '222@qq.com',
-            isLock: 'N'
-          }, {
-            // 时间
-            editTime: 1527411068000,
-            // 用户id
-            userId: 1,
-            // 用户姓名
-            userName: 'root',
-            // 身份
-            userRealName: '管理员',
-            // 手机号
-            userMobile: '138123456789',
-            // 邮箱
-            userEmail: '111@qq.com',
-            // 帐号状态
-            isLock: 'N'
-          },
-          {
-            editTime: 1527410579000,
-            userId: 3,
-            userName: 'zengzhuo',
-            userRealName: '普通用户',
-            userMobile: '18616988966',
-            userEmail: '222@qq.com',
-            isLock: 'N'
-          }, {
-            // 时间
-            editTime: 1527411068000,
-            // 用户id
-            userId: 1,
-            // 用户姓名
-            userName: 'root',
-            // 身份
-            userRealName: '管理员',
-            // 手机号
-            userMobile: '138123456789',
-            // 邮箱
-            userEmail: '111@qq.com',
-            // 帐号状态
-            isLock: 'N'
-          },
-          {
-            editTime: 1527410579000,
-            userId: 3,
-            userName: 'zengzhuo',
-            userRealName: '普通用户',
-            userMobile: '18616988966',
-            userEmail: '222@qq.com',
-            isLock: 'N'
-          }, {
-            // 时间
-            editTime: 1527411068000,
-            // 用户id
-            userId: 1,
-            // 用户姓名
-            userName: 'root',
-            // 身份
-            userRealName: '管理员',
-            // 手机号
-            userMobile: '138123456789',
-            // 邮箱
-            userEmail: '111@qq.com',
-            // 帐号状态
-            isLock: 'N'
-          },
-          {
-            editTime: 1527410579000,
-            userId: 3,
-            userName: 'zengzhuo',
-            userRealName: '普通用户',
-            userMobile: '18616988966',
-            userEmail: '222@qq.com',
-            isLock: 'N'
-          }, {
-            // 时间
-            editTime: 1527411068000,
-            // 用户id
-            userId: 1,
-            // 用户姓名
-            userName: 'root',
-            // 身份
-            userRealName: '管理员',
-            // 手机号
-            userMobile: '138123456789',
-            // 邮箱
-            userEmail: '111@qq.com',
-            // 帐号状态
-            isLock: 'N'
-          },
-          {
-            editTime: 1527410579000,
-            userId: 3,
-            userName: 'zengzhuo',
-            userRealName: '普通用户',
-            userMobile: '18616988966',
-            userEmail: '222@qq.com',
-            isLock: 'N'
-          }, {
-            // 时间
-            editTime: 1527411068000,
-            // 用户id
-            userId: 1,
-            // 用户姓名
-            userName: 'root',
-            // 身份
-            userRealName: '管理员',
-            // 手机号
-            userMobile: '138123456789',
-            // 邮箱
-            userEmail: '111@qq.com',
-            // 帐号状态
-            isLock: 'N'
-          },
-          {
-            editTime: 1527410579000,
-            userId: 3,
-            userName: 'zengzhuo',
-            userRealName: '普通用户',
-            userMobile: '18616988966',
-            userEmail: '222@qq.com',
-            isLock: 'N'
-          },
-          {
-            editTime: 1527410579000,
-            userId: 3,
-            userName: 'zengzhuo',
-            userRealName: '普通用户',
-            userMobile: '18616988966',
-            userEmail: '222@qq.com',
-            isLock: 'N'
-          },
-          {
-            editTime: 1527410579000,
-            userId: 3,
-            userName: 'zengzhuo',
-            userRealName: '普通用户',
-            userMobile: '18616988966',
-            userEmail: '222@qq.com',
-            isLock: 'N'
-          }
-        ]
+    // 显示添加用户对话框
+    add () {
+      this.dialogVisible = true
+      // 清空新用户信息
+      this.newUser = {
+        userName: '',
+        userId: '',
+        userEmail: '',
+        userRealName: ''
       }
-      this.loading = false
-      //   将数组中的数据渲染给表格绑定的数据
-      this.userTableData = res.data
-      //   // 分页赋值
-      //   this.pageparm.currentPage = this.formInline.page
-      //   this.pageparm.pageSize = this.formInline.limit
-      //   this.pageparm.total = res.count
-      // 模拟数据结束
+    },
+    // 添加用户
+    async addUser () {
+      try {
+      // 将新用户信息添加到表格数据中
+        this.userTableData.push({
+          userName: this.newUser.userName,
+          userId: this.newUser.userId,
+          userEmail: this.newUser.userEmail,
+          editTime: new Date(), // 可以自行定义新增用户的编辑时间
+          userRealName: this.userRealName,
+          isLock: 'N'
+        })
 
-      /***
-       * 调用接口，注释上面模拟数据 取消下面注释
-       */
-      // 获取用户列表
-      // userList(parameter).then(res => {
-      //   this.loading = false
-      //   if (res.success == false) {
-      //     this.$message({
-      //       type: 'info',
-      //       message: res.msg
-      //     })
-      //   } else {
-      //     this.userData = res.data
-      //     // 分页赋值
-      //     this.pageparm.currentPage = this.formInline.page
-      //     this.pageparm.pageSize = this.formInline.limit
-      //     this.pageparm.total = res.count
-      //   }
-      // })
+        // 关闭对话框
+        this.dialogVisible = false
+
+        // 发送添加用户请求
+        const addResponse = await fetch('http://8.134.178.176:8080/admin/add/user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: this.$store.usertoken
+          },
+          body: JSON.stringify({
+            // eslint-disable-next-line no-undef
+            userName: this.newUser.userName,
+            userId: this.newUser.userId,
+            userEmail: this.newUser.userEmail,
+            editTime: new Date(), // 可以自行定义新增用户的编辑时间
+            userRealName: '普通用户',
+            isLock: 'N'
+          })
+        })
+
+        if (addResponse.ok) {
+          const addData = await addResponse.json()
+          console.log('Add user response:', addData)
+        } else {
+          throw new Error('Failed to add user')
+        }
+      } catch (error) {
+        console.error('Error adding user:', error)
+        // 清空新用户信息
+        this.newUser = {
+          userName: '',
+          userId: '',
+          userEmail: '',
+          userRealName: '',
+          isLock: 'N'
+        }
+      }
+    },
+
+    // 搜索函数
+    search () {
+    // 在搜索前调用 fetchDataReal 方法获取最新数据
+      this.getData().then(() => {
+      // 根据输入的用户名和邮箱号进行搜索过滤
+        const filteredUsers = this.userTableData.filter(user =>
+          (user.userName.toLowerCase().includes(this.searchUserName.toLowerCase()) || this.searchUserName === '') &&
+          (user.userEmail.toLowerCase().includes(this.searchUserEmail.toLowerCase()) || this.searchUserEmail === '')
+        )
+
+        // 更新表格数据为搜索结果
+        this.userTableData = filteredUsers
+      })
+    },
+
+    // 获取用户数据列表
+    getData () {
+      // 调用用户信息 API 获取基本用户数据
+      fetch('http://8.134.178.176:8080/admin/list?page=1&pageSize=10', {
+        method: 'POST',
+        headers: {
+          Authorization: this.$store.state.usertoken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      })
+        .then(_response => { // 将 response 改为 _response
+          if (!_response.ok) {
+            throw new Error('网络请求失败')
+          }
+          return _response.json()
+        })
+        .then(userData => {
+          // 在这里处理响应数据
+          console.log(userData)
+          // 从后端获取数据并赋值给表格数组
+          this.userTableData = userData.data.list
+          console.log(this.userTableData)
+        })
+        .catch(error => {
+          this.$message({
+            type: 'error',
+            message: '权限不足！'
+          })
+          console.error('获取用户数据时出错:', error)
+        })
+    },
+    // 更新用户身份（实现）
+    changeRole (userId, roleId) {
+      fetch(`http://8.134.178.176:8080/admin/role/update?userId=${userId}&roleId=${roleId}`, {
+        method: 'PUT',
+        headers: {
+          // 从vuex获取token
+          Authorization: this.$store.state.usertoken,
+          'Content-Type': 'application/json'
+        },
+        // 请求体设置为空
+        body: JSON.stringify({})
+      })
+        .then(_response => { // 将 response 改为 _response
+          if (!_response.ok) {
+            throw new Error('网络请求失败')
+          }
+          return _response.json()
+        })
+        .then(userData => {
+          // 在这里处理响应数据
+          this.$message({
+            type: 'success',
+            message: '修改身份成功'
+          })
+          console.log(666, userData)
+        })
+        .catch(error => {
+          this.$message({
+            type: 'error',
+            message: '修改身份失败'
+          })
+          console.error('获取用户数据时出错:', error)
+        })
+    },
+    // 修改用户状态（实现）
+    changeInfo (status, userId, userName = null) {
+      const requestBody = {
+        status: status,
+        userId: userId
+      }
+
+      // 如果用户名存在，则添加到请求体中
+      if (userName !== null) {
+        requestBody.username = userName
+      }
+
+      fetch('http://8.134.178.176:8080/admin/info/update', {
+        method: 'PUT',
+        headers: {
+          Authorization: this.$store.state.usertoken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('网络请求失败')
+          }
+          return response.json()
+        })
+        .then(userData => {
+          this.$message({
+            type: 'success',
+            message: '修改成功！'
+          })
+          console.log(userData)
+        })
+        .catch(error => {
+          this.$message({
+            type: 'error',
+            message: '修改状态失败'
+          })
+          console.error('修改用户信息时出错:', error)
+        })
+    },
+
+    // 重置密码接口封装
+    changepassword (userId) {
+      fetch(`http://8.134.178.176:8080/admin/update?userId=${userId}`, {
+        method: 'PUT',
+        headers: {
+          // 从vuex获取token
+          Authorization: this.$store.state.usertoken,
+          'Content-Type': 'application/json'
+        },
+        // 请求体设置为空
+        body: JSON.stringify({})
+      })
+        .then(_response => { // 将 response 改为 _response
+          if (!_response.ok) {
+            throw new Error('网络请求失败')
+          }
+          return _response.json()
+        })
+        .then(userData => {
+          // 在这里处理响应数据
+          console.log(555, userData)
+        })
+        .catch(error => {
+          console.error('获取用户数据时出错:', error)
+        })
+    },
+    // 编写修改用户类型点击事件
+    editUserRole (row) {
+      console.log(row.userId, row.roleVO.roleId)
+      this.changeRole(row.userId, row.roleVO.roleId)
     }
   }
+
 }
 </script >
 
-  <style scoped>
+<style scoped>
 .cell{
-    text-align: center;
+  text-align: center;
 }
-  </style>
+</style>
