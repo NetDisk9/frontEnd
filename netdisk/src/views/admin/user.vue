@@ -7,26 +7,29 @@
     </el-breadcrumb><br>
 
     <!-- 下面栏目用于搜索功能 -->
+    <!-- 下面栏目用于搜索功能 -->
     <el-form :inline="true" :model="formInline" class="user-search">
       <el-form-item label="搜索：">
           <!-- 这里进行帐号是否正常进行筛选需要调用后期接口 -->
-        <el-select size="small" v-model="formInline.isLock" placeholder="请选择">
+          <!-- 修改数值后触发事件进行筛选符合状态的数值 ，因为forminline不是从后端拿的数据所以初始状态为空，每次刷新传递给getdata的都是空值，点击修改后就会重新传递islock-->
+        <el-select size="small" v-model="formInline.isLock" placeholder="请选择" @change="searchStatus()">
           <el-option label="全部" value=""></el-option>
-          <el-option label="正常" value="N"></el-option>
-          <el-option label="已锁定" value="Y"></el-option>
+          <!-- -->
+          <el-option label="正常" value="0"></el-option>
+          <el-option label="已锁定" value="1"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="">
-        <el-input size="small" v-model="searchUserName" placeholder="输入用户名"></el-input>
+        <el-input size="small" v-model="formInline.username" placeholder="输入用户名"></el-input>
       </el-form-item>
       <el-form-item label="">
-      <el-input size="small" v-model="searchUserEmail" placeholder="输入邮箱号"></el-input>
+      <el-input size="small" v-model="formInline.email" placeholder="输入邮箱号"></el-input>
       </el-form-item>
       <el-form-item>
         <el-button size="small" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
         <el-button size="small" type="primary" icon="el-icon-plus"  @click="add" style="margin-left: 10px;">添加</el-button>
-            <!-- 对话框 -->
-    <el-dialog
+      <!-- 对话框 -->
+      <el-dialog
       title="添加用户"
       :visible.sync="dialogVisible"
       width="30%"
@@ -35,26 +38,58 @@
       <!-- 输入框 -->
       <el-form :model="newUser" label-width="80px">
         <el-form-item label="用户名">
-          <el-input v-model="newUser.userName" placeholder="请输入用户名"></el-input>
+          <el-input v-model="newUser.username" placeholder="请输入用户名"></el-input>
         </el-form-item>
-        <el-form-item label="用户ID">
-          <el-input v-model="newUser.userId" placeholder="请输入用户ID"></el-input>
+        <el-form-item label="用户密码">
+          <el-input v-model="newUser.password" placeholder="请输入用户密码"></el-input>
         </el-form-item>
-        <el-form-item label="用户邮箱">
-          <el-input v-model="newUser.userEmail" placeholder="请输入用户邮箱"></el-input>
-        </el-form-item>
-        <el-form-item label="用户类型">
-          <el-input v-model="newUser.userRealName" placeholder="管理员/普通用户"></el-input>
+        <el-form-item label="角色ID">
+        <el-input v-model="newUser.roleId" placeholder="请输入用户类型ID"></el-input>
+         <!-- 显示角色列表 -->
+         <div v-if="rolelist.length > 0">
+            <label>选择用户类型：</label>
+            <el-select v-model="newUser.roleId" placeholder="请选择用户类型">
+              <el-option
+                v-for="role in rolelist"
+                :key="role.roleId"
+                :label="role.roleName"
+                :value="role.roleId"
+              ></el-option>
+            </el-select>
+          </div>
         </el-form-item>
       </el-form>
 
       <!-- 确定和取消按钮 -->
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button @click="handleClose">取消</el-button>
         <el-button type="primary" @click="addUser">确定</el-button>
       </span>
     </el-dialog>
-        <el-button size="small" type="primary" style="margin-left: 10px;">部门设置</el-button>
+     <!--  LYX -->
+     <el-button size="small" type="primary" style="margin-left: 10px;" @click="showDialog">批量添加用户</el-button>
+        <MyModal :show="showModal" @close="showModal = false">
+          <div style="font-size:20px; margin: 0 0 10px 10%">批量添加用户</div>
+          <div style="display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 0 0 10%">
+              <div style="display: flex; align-items: center; margin: auto; width: 60%">
+                <div style="display: flex; width: 35px">数量</div>
+                <el-input style="width: 80%; padding: 0 10% 0 10%" v-model="createUserNum" placeholder="请输入数字"></el-input>
+              </div>
+              <div style="display: flex; padding: 0 10% 0 10%">
+                <el-select v-model="selectedRoleId" style="width: 80%" placeholder="用户权限">
+                  <el-option v-for="role in rolelist" :key="role.roleId" :label="role.roleName" :value="role.roleId">
+                  </el-option>
+                </el-select>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: center; margin: 20px 0 0 0">
+              <el-button @click="sendForExcel()">确认</el-button>
+              <el-button @click="cancel()">取消</el-button>
+            </div>
+          </div>
+        </MyModal>
+        <!--  LYX -->
       </el-form-item>
     </el-form>
 
@@ -127,7 +162,12 @@
 </template>
 <script>
 import { getrole } from '@/api/admin'
+import MyModal from '@/components/myModal.vue'
+import axios from 'axios'
 export default {
+  components: {
+    MyModal
+  },
   name: 'userPage',
   data () {
     return {
@@ -151,14 +191,17 @@ export default {
       //   下面是frominline数据
       formInline: {
         page: 1,
-        limit: 10,
         deptId: '',
-        userName: '',
+        username: '',
+        email: '',
         userMobile: '',
         isLock: ''
       },
       searchUserName: '',
       searchUserEmail: '',
+      showModal: false, // LYX
+      createUserNum: '', // LYX
+      selectedRoleId: '', // LYX
 
       editForm: {
       // 用户id
@@ -178,14 +221,21 @@ export default {
 
     }
   },
+  // 最好还是把所有接口函数声明为异步这样子可以防止阻塞，当然也可以先同步页面刷新然后再调用接口到后端进行修改，但是先渲染页面然后调用接口容易产生的问题是如果接口调用失败了但是页面修改完了就会产生错误
+  // 异步渲染就是页面会先渲染其他部分，然后渲染完成后会获取最新数据然后响应式进行再次渲染
   async created () {
     // this.getdataTest(this.formInline) // 测试版本，写死数据
     // this.getdata(this.formInline)   //上线版本，从后端拿数据
     const Authorization = this.$store.state.usertoken
+    // 不需要async因为不需要对返回值进行操作
     this.getData() // 上线版本，从后端拿数据
     // 获取可修改权限类型
+    // getrole异步函数没有在里面对rolelist进行赋值所以需要使用await进行等待等异步执行完成下面再对rolelist进行赋值，不使用await的话会导致没拿到rolelist就进行渲染
+    // async一般用于调用接口的异步函数，然后await要用在赋值的时候，有返回值需要接受的时候就需要使用await等待
+    // 这下面如果不使用await的话就会先执行下面的同步代码，就会发现赋值是无效的，所以我门要添加await等待请求的数据到了之后再进行渲染
     const { data } = await getrole(Authorization)
     // console.log(Authorization)
+    // 将后端的数据拿到传递给修改权限列表
     this.rolelist = data.data
     console.log(this.rolelist)
     // const userId = '1772526756342882306'
@@ -197,6 +247,139 @@ export default {
   },
 
   methods: {
+    searchStatus () {
+      console.log(this.formInline.isLock)
+      // 修改状态后会重新传递状态获取最新列表进行渲染，每次修改搜索的数据的时候都需要调用获取数据接口
+      this.getData()
+    },
+    handleClose () {
+      // 关闭对话框时重置表单
+      this.dialogVisible = false
+      this.newUser = {
+        username: '',
+        password: '',
+        roleId: null
+      }
+    },
+
+    // 显示添加用户对话框
+    async add () {
+      this.dialogVisible = true // 打开对话框
+      // this.fetchRoleList() // 打开对话框时获取角色列表
+      this.getData()
+    },
+    // 添加用户接口封装
+    async addUser () {
+      try {
+        const oldPassword = this.newUser.password
+
+        // 使用正则表达式替换特殊字符为对应的 URL 编码
+        const newPassword = oldPassword.replace(/[@#$%*]/g, (match) => {
+          // 将匹配到的特殊字符转换为对应的 16 进制编码
+          return '%' + match.charCodeAt(0).toString(16).toUpperCase()
+        })
+
+        // 更新新的密码值
+        this.newUser.password = newPassword
+
+        // 获取需要的参数
+        const { username, password, roleId } = this.newUser
+
+        // 构建请求的 URL，将 username、password 和 roleId 都放置在路径中
+        const url = `http://8.134.178.176:8080/admin/add/user?username=${username}&password=${password}&roleId=${roleId}`
+
+        const response = await axios.post(
+          url,
+          {}, // 空的请求体，因为数据已经放置在路径中
+          {
+            headers: {
+              Authorization: this.$store.state.usertoken
+              // Authorization: 'eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTMzOTgwMDcsInVzZXJpZCI6IjE3Njg1NDYwNDIyNDczMjM2NDkifQ.YrDG-g0DSO8k6l9hJNTVdyQb2WPNNZ0ScjPwTe0Xyvg'
+            }
+          }
+        )
+        // 处理响应
+        if (response && response.data) {
+          const responseData = response.data
+          switch (response.status) {
+            case 200:
+              if (responseData.code === 200) {
+                this.$message.success(responseData.message || '新增用户成功')
+              } else {
+                this.$message.error(responseData.message || '新增用户失败')
+              }
+              break
+            case 422:
+              if (responseData.code === 422 && responseData.errors) {
+                // 遍历 errors 对象，显示具体的参数错误提示
+                Object.keys(responseData.errors).forEach(field => {
+                  const errorMessage = responseData.errors[field]
+                  switch (field) {
+                    case 'username':
+                      this.$message.error(`用户名错误: ${errorMessage}`)
+                      break
+                    case 'password':
+                      this.$message.error(`密码错误: ${errorMessage}`)
+                      break
+                      // 可以根据需要添加其他字段的处理
+                    default:
+                      this.$message.error(`参数错误: ${errorMessage}`)
+                      break
+                  }
+                })
+              } else {
+                this.$message.error('请求失败：' + responseData.message)
+              }
+              break
+            default:
+              this.$message.error('请求失败：' + responseData.message)
+              break
+          }
+        } else {
+          this.$message.error('未收到有效的响应')
+        }
+      } catch (error) {
+        console.error('新增用户请求出错:', error)
+        this.$message.error('新增用户失败')
+      }
+    },
+    // 搜索函数
+    async search () {
+      try {
+        this.formInline.pageSize = 50 // 默认每页显示20条数据
+
+        // 设置默认的分页参数
+        const { page, pageSize } = this.formInline
+
+        // 构建请求的 URL，将 page 和 pageSize 作为查询参数
+        const url = `http://8.134.178.176:8080/admin/list?page=${page}&pageSize=${pageSize}`
+
+        // 准备请求体，只包含除了 page 和 pageSize 之外的搜索条件
+        const { username, email } = this.formInline
+        const requestBody = {
+          username: username,
+          email: email
+        }
+
+        // 发送 POST 请求，将搜索条件放置在请求体中
+        const response = await axios.post(url, requestBody, {
+          headers: {
+            Authorization: this.$store.state.usertoken
+          }
+        })
+
+        // 处理响应结果
+        if (response && response.data && response.data.code === 200) {
+          const responseData = response.data.data
+          this.userTableData = responseData.list // 更新用户列表数据
+        } else {
+          this.$message.error(response.data.message || '搜索失败')
+        }
+      } catch (error) {
+        console.error('搜索用户失败:', error)
+        this.$message.error('搜索用户失败')
+      }
+    },
     toggleEdit (row) {
     // 动态添加 editing 属性
       this.$set(row, 'editing', true)
@@ -211,32 +394,7 @@ export default {
       this.currentPage = currentPage
       console.log(this.currentPage) // 点击第几页
     },
-    // // 处理时间戳函数
-    // formatDate (timestamp) {
-    //   const date = new Date(timestamp)
-    //   const year = date.getFullYear()
-    //   const month = (date.getMonth() + 1).toString().padStart(2, '0')
-    //   const day = date.getDate().toString().padStart(2, '0')
-    //   const hours = date.getHours().toString().padStart(2, '0')
-    //   const minutes = date.getMinutes().toString().padStart(2, '0')
-    //   const seconds = date.getSeconds().toString().padStart(2, '0')
-    //   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-    // },
 
-    // computed: {
-    // // 根据搜索条件过滤后的用户数据
-    //   filteredUserTableData () {
-    //     const { isLock, userName, userMobile } = this.formInline
-
-    //     // 过滤条件：帐号状态、用户名、手机号都符合搜索框中的值才会显示
-    //     return this.userTableData.filter(user => {
-    //       const isLockMatch = !isLock || user.isLock === isLock
-    //       const userNameMatch = !userName || user.userName.includes(userName)
-    //       const userMobileMatch = !userMobile || user.userMobile.includes(userMobile)
-    //       return isLockMatch && userNameMatch && userMobileMatch
-    //     })
-    //   }
-    // },
     selectChange () {},
     // 修改用户名失去焦点后保存函数，并对输入框的数值进行检验
     saveChanges (row) {
@@ -265,12 +423,15 @@ export default {
     },
 
     // 切换用户状态函数
+    // 若不需要对异步函数后续的操作的话可以不添加async await，这里不添加async就会先执行前面两行代码，然后将请求放入异步，等待完成后就会刷新数据
+    // 当然也可以全部当作异步函数加上async然后等待其他同步代码执行完成后就会执行这个事件内部的函数
     editType (index, row) {
     // 根据当前状态切换状态值
+    // 这里正确的做法应该是先不要进行状态的修改在页面上而是点击后将状态取反传递给后端，然后执行成功后再重新获取更新一遍我们的用户列表数据这样就可以进行渲染了，但是如果数据一多会影响用户体验，并且如果先渲染可以增加页面流畅性
       row.status = row.status === 0 ? 1 : 0
+      console.log(row)
       // 在这里可以添加发送请求更新用户状态的逻辑
       this.changeInfo(row.status, row.userId)
-      console.log(row)
     },
     resetpwd (index, row) {
     // 后期需要用到用户id进行重置
@@ -292,95 +453,22 @@ export default {
         })
       })
     },
-    // 显示添加用户对话框
-    add () {
-      this.dialogVisible = true
-      // 清空新用户信息
-      this.newUser = {
-        userName: '',
-        userId: '',
-        userEmail: '',
-        userRealName: ''
-      }
-    },
-    // 添加用户
-    async addUser () {
-      try {
-      // 将新用户信息添加到表格数据中
-        this.userTableData.push({
-          userName: this.newUser.userName,
-          userId: this.newUser.userId,
-          userEmail: this.newUser.userEmail,
-          editTime: new Date(), // 可以自行定义新增用户的编辑时间
-          userRealName: this.userRealName,
-          isLock: 'N'
-        })
-
-        // 关闭对话框
-        this.dialogVisible = false
-
-        // 发送添加用户请求
-        const addResponse = await fetch('http://8.134.178.176:8080/admin/add/user', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: this.$store.usertoken
-          },
-          body: JSON.stringify({
-            // eslint-disable-next-line no-undef
-            userName: this.newUser.userName,
-            userId: this.newUser.userId,
-            userEmail: this.newUser.userEmail,
-            editTime: new Date(), // 可以自行定义新增用户的编辑时间
-            userRealName: '普通用户',
-            isLock: 'N'
-          })
-        })
-
-        if (addResponse.ok) {
-          const addData = await addResponse.json()
-          console.log('Add user response:', addData)
-        } else {
-          throw new Error('Failed to add user')
-        }
-      } catch (error) {
-        console.error('Error adding user:', error)
-        // 清空新用户信息
-        this.newUser = {
-          userName: '',
-          userId: '',
-          userEmail: '',
-          userRealName: '',
-          isLock: 'N'
-        }
-      }
-    },
-
-    // 搜索函数
-    search () {
-    // 在搜索前调用 fetchDataReal 方法获取最新数据
-      this.getData().then(() => {
-      // 根据输入的用户名和邮箱号进行搜索过滤
-        const filteredUsers = this.userTableData.filter(user =>
-          (user.userName.toLowerCase().includes(this.searchUserName.toLowerCase()) || this.searchUserName === '') &&
-          (user.userEmail.toLowerCase().includes(this.searchUserEmail.toLowerCase()) || this.searchUserEmail === '')
-        )
-
-        // 更新表格数据为搜索结果
-        this.userTableData = filteredUsers
-      })
-    },
 
     // 获取用户数据列表
     getData () {
+      // 构造请求体参数
+      const requestBody = {
+        status: this.formInline.isLock
+      }
+
       // 调用用户信息 API 获取基本用户数据
-      fetch('http://8.134.178.176:8080/admin/list?page=1&pageSize=10', {
+      fetch('http://8.134.178.176:8080/admin/list?page=1&pageSize=100', {
         method: 'POST',
         headers: {
           Authorization: this.$store.state.usertoken,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({})
+        body: JSON.stringify(requestBody) // 将请求体参数转换为 JSON 字符串并放入 body 中
       })
         .then(_response => { // 将 response 改为 _response
           if (!_response.ok) {
@@ -403,6 +491,7 @@ export default {
           console.error('获取用户数据时出错:', error)
         })
     },
+
     // 更新用户身份（实现）
     changeRole (userId, roleId) {
       fetch(`http://8.134.178.176:8080/admin/role/update?userId=${userId}&roleId=${roleId}`, {
@@ -509,7 +598,51 @@ export default {
     editUserRole (row) {
       console.log(row.userId, row.roleVO.roleId)
       this.changeRole(row.userId, row.roleVO.roleId)
+    },
+    // 显示模态框 LYX
+    showDialog () {
+      this.showModal = true
+    },
+    // 取消批量添加
+    cancel () {
+      this.showModal = false
+    },
+    // 请求后端生成excel文件
+    sendForExcel () {
+      fetch(`http://8.134.178.176:8080/admin/add/all/user?count=${this.createUserNum}&roleId=${this.selectedRoleId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: this.$store.state.usertoken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      })
+        .then(_response => { // 将 response 改为 _response
+          if (!_response.ok) {
+            throw new Error('网络请求失败')
+          }
+          return _response
+        })
+        .then(async userData => {
+          // 在这里处理响应数据
+          console.log(666, userData)
+          this.$message({
+            type: 'success',
+            message: '添加成功'
+          })
+          const blob = await userData.blob()
+          const url = window.URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = '用户信息.xlsx'
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          this.showModal = false
+        })
+      this.showModal = false
     }
+    // LYX
   }
 
 }
