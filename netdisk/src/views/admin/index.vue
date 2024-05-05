@@ -14,13 +14,20 @@
         <div id="area1" class="area">
             <!-- 存放导航区域 -->
             <el-menu
-            default-active="2"
-            class="el-menu-vertical-demo">
+            default-active="/admin/userPage"
+            class="el-menu-vertical-demo"
+            :router="true">
             <!-- 用户管理导航 -->
-        <el-menu-item index="2">
+        <el-menu-item index="/admin/userPage">
         <i class="el-icon-user" ></i>
         <span slot="title">用户管理</span>
         </el-menu-item>
+
+        <!-- 管理员管理界面 -->
+        <el-menu-item index="/admin/adminPage" >
+        <i class="el-icon-s-custom"></i>
+        <span slot="title">管理员管理</span>
+      </el-menu-item>
     </el-menu>
         </div>
 

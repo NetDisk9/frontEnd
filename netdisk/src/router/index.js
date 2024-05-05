@@ -7,6 +7,7 @@ import home from '@/views/login/home.vue'
 import HomeView from '@/views/HomeView.vue'
 import adminPage from '@/views/admin/index.vue'
 import userPage from '@/views/admin/user.vue'
+import managePage from '@/views/admin/admin.vue'
 Vue.use(VueRouter)
 
 const router = new VueRouter({
@@ -45,8 +46,14 @@ const router = new VueRouter({
       redirect: '/admin/userpage',
       children: [
         {
+          // 用户管理界面
           path: '/admin/userPage',
           component: userPage
+        },
+        {
+          // 管理员管理界面
+          path: '/admin/adminPage',
+          component: managePage
         }
       ]
 

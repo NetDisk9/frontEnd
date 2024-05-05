@@ -1,165 +1,167 @@
+<!-- 管理员管理界面 -->
 <template>
-  <div>
-    <el-breadcrumb separator-class="el-icon-arrow-right">
-      <!-- 点击可以跳转到首页 这里首页就是用户管理页面 -->
-      <el-breadcrumb-item :to="{ path: '/admin' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>用户管理</el-breadcrumb-item>
-    </el-breadcrumb><br>
+    <div>
+      <el-breadcrumb separator-class="el-icon-arrow-right">
+        <!-- 点击可以跳转到首页 这里首页就是用户管理页面 -->
+        <el-breadcrumb-item :to="{ path: '/admin' }">首页</el-breadcrumb-item>
+        <el-breadcrumb-item>管理员管理</el-breadcrumb-item>
+      </el-breadcrumb><br>
 
-    <!-- 下面栏目用于搜索功能 -->
-    <!-- 下面栏目用于搜索功能 -->
-    <el-form :inline="true" :model="formInline" class="user-search">
-      <el-form-item label="搜索：">
-          <!-- 这里进行帐号是否正常进行筛选需要调用后期接口 -->
-          <!-- 修改数值后触发事件进行筛选符合状态的数值 ，因为forminline不是从后端拿的数据所以初始状态为空，每次刷新传递给getdata的都是空值，点击修改后就会重新传递islock-->
-        <el-select size="small" v-model="formInline.isLock" placeholder="请选择" @change="searchStatus()">
-          <el-option label="全部" value=""></el-option>
-          <!-- -->
-          <el-option label="正常" value="0"></el-option>
-          <el-option label="已锁定" value="1"></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="">
-        <el-input size="small" v-model="formInline.username" placeholder="输入用户名"></el-input>
-      </el-form-item>
-      <el-form-item label="">
-      <el-input size="small" v-model="formInline.email" placeholder="输入邮箱号"></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-button size="small" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
-        <el-button size="small" type="primary" icon="el-icon-plus"  @click="add" style="margin-left: 10px;">添加</el-button>
-      <!-- 对话框 -->
-      <el-dialog
-      title="添加用户"
-      :visible.sync="dialogVisible"
-      width="30%"
-      center
-    >
-      <!-- 输入框 -->
-      <el-form :model="newUser" label-width="80px">
-        <el-form-item label="用户名">
-          <el-input v-model="newUser.username" placeholder="请输入用户名"></el-input>
+      <!-- 下面栏目用于搜索功能 -->
+      <!-- 下面栏目用于搜索功能 -->
+      <el-form :inline="true" :model="formInline" class="user-search">
+        <el-form-item label="搜索：">
+            <!-- 这里进行帐号是否正常进行筛选需要调用后期接口 -->
+            <!-- 修改数值后触发事件进行筛选符合状态的数值 ，因为forminline不是从后端拿的数据所以初始状态为空，每次刷新传递给getdata的都是空值，点击修改后就会重新传递islock-->
+          <el-select size="small" v-model="formInline.isLock" placeholder="请选择" @change="searchStatus()">
+            <el-option label="全部" value=""></el-option>
+            <!-- -->
+            <el-option label="正常" value="0"></el-option>
+            <el-option label="已锁定" value="1"></el-option>
+          </el-select>
         </el-form-item>
-        <el-form-item label="用户密码">
-          <el-input v-model="newUser.password" placeholder="请输入用户密码"></el-input>
+        <el-form-item label="">
+          <el-input size="small" v-model="formInline.username" placeholder="输入用户名"></el-input>
         </el-form-item>
-        <el-form-item label="角色ID">
-        <el-input v-model="newUser.roleId" placeholder="请输入用户类型ID"></el-input>
-         <!-- 显示角色列表 -->
-         <div v-if="rolelist.length > 0">
-            <label>选择用户类型：</label>
-            <el-select v-model="newUser.roleId" placeholder="请选择用户类型">
-              <el-option
-                v-for="role in rolelist"
-                :key="role.roleId"
-                :label="role.roleName"
-                :value="role.roleId"
-              ></el-option>
-            </el-select>
-          </div>
+        <el-form-item label="">
+        <el-input size="small" v-model="formInline.email" placeholder="输入邮箱号"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button size="small" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
+          <el-button size="small" type="primary" icon="el-icon-plus"  @click="add" style="margin-left: 10px;">添加</el-button>
+        <!-- 对话框 -->
+        <el-dialog
+        title="添加用户"
+        :visible.sync="dialogVisible"
+        width="30%"
+        center
+      >
+        <!-- 输入框 -->
+        <el-form :model="newUser" label-width="80px">
+          <el-form-item label="用户名">
+            <el-input v-model="newUser.username" placeholder="请输入用户名"></el-input>
+          </el-form-item>
+          <el-form-item label="用户密码">
+            <el-input v-model="newUser.password" placeholder="请输入用户密码"></el-input>
+          </el-form-item>
+          <el-form-item label="角色ID">
+          <el-input v-model="newUser.roleId" placeholder="请输入用户类型ID"></el-input>
+           <!-- 显示角色列表只有可修改列表大于0时候才可以显示 -->
+           <div v-if="rolelist.length > 0">
+              <label>选择用户类型：</label>
+              <el-select v-model="newUser.roleId" placeholder="请选择用户类型">
+                <!-- 与可修改身份列表进行绑定 -->
+                <el-option
+                  v-for="role in rolelist"
+                  :key="role.roleId"
+                  :label="role.roleName"
+                  :value="role.roleId"
+                ></el-option>
+              </el-select>
+            </div>
+          </el-form-item>
+        </el-form>
+
+        <!-- 确定和取消按钮 -->
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="handleClose">取消</el-button>
+          <el-button type="primary" @click="addUser">确定</el-button>
+        </span>
+      </el-dialog>
+       <!--  LYX -->
+       <el-button size="small" type="primary" style="margin-left: 10px;" @click="showDialog">批量添加用户</el-button>
+          <MyModal :show="showModal" @close="showModal = false">
+            <div style="font-size:20px; margin: 0 0 10px 10%">批量添加用户</div>
+            <div style="display: flex; flex-direction: column;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 0 0 10%">
+                <div style="display: flex; align-items: center; margin: auto; width: 60%">
+                  <div style="display: flex; width: 35px">数量</div>
+                  <el-input style="width: 80%; padding: 0 10% 0 10%" v-model="createUserNum" placeholder="请输入数字"></el-input>
+                </div>
+                <div style="display: flex; padding: 0 10% 0 10%">
+                  <el-select v-model="selectedRoleId" style="width: 80%" placeholder="用户权限">
+                    <el-option v-for="role in rolelist" :key="role.roleId" :label="role.roleName" :value="role.roleId">
+                    </el-option>
+                  </el-select>
+                </div>
+              </div>
+              <div style="display: flex; justify-content: center; margin: 20px 0 0 0">
+                <el-button @click="sendForExcel()">确认</el-button>
+                <el-button @click="cancel()">取消</el-button>
+              </div>
+            </div>
+          </MyModal>
+          <!--  LYX -->
         </el-form-item>
       </el-form>
 
-      <!-- 确定和取消按钮 -->
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="handleClose">取消</el-button>
-        <el-button type="primary" @click="addUser">确定</el-button>
-      </span>
-    </el-dialog>
-     <!--  LYX -->
-     <el-button size="small" type="primary" style="margin-left: 10px;" @click="showDialog">批量添加用户</el-button>
-        <MyModal :show="showModal" @close="showModal = false">
-          <div style="font-size:20px; margin: 0 0 10px 10%">批量添加用户</div>
-          <div style="display: flex; flex-direction: column;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 0 0 10%">
-              <div style="display: flex; align-items: center; margin: auto; width: 60%">
-                <div style="display: flex; width: 35px">数量</div>
-                <el-input style="width: 80%; padding: 0 10% 0 10%" v-model="createUserNum" placeholder="请输入数字"></el-input>
-              </div>
-              <div style="display: flex; padding: 0 10% 0 10%">
-                <el-select v-model="selectedRoleId" style="width: 80%" placeholder="用户权限">
-                  <el-option v-for="role in rolelist" :key="role.roleId" :label="role.roleName" :value="role.roleId">
-                  </el-option>
-                </el-select>
-              </div>
-            </div>
-            <div style="display: flex; justify-content: center; margin: 20px 0 0 0">
-              <el-button @click="sendForExcel()">确认</el-button>
-              <el-button @click="cancel()">取消</el-button>
-            </div>
-          </div>
-        </MyModal>
-        <!--  LYX -->
-      </el-form-item>
-    </el-form>
+   <!-- 内容区域表格 -->
+      <el-table size="small" @selection-change="selectChange"  :data="userTableData.slice((currentPage-1)*pagesize,currentPage*pagesize)" style="width: 100%;">
+          <!-- <el-table-column align="center" type="selection" width="50">
+          </el-table-column> -->
 
- <!-- 内容区域表格 -->
-    <el-table size="small" @selection-change="selectChange"  :data="userTableData.slice((currentPage-1)*pagesize,currentPage*pagesize)" style="width: 100%;">
-        <!-- <el-table-column align="center" type="selection" width="50">
-        </el-table-column> -->
+          <el-table-column label="用户名" prop="username">
+    <template slot-scope="scope">
+      <div v-if="!scope.row.editing" @dblclick="toggleEdit(scope.row)">
+        {{ scope.row.username }}
+      </div>
+      <el-input v-else v-model="scope.row.username" @blur="saveChanges(scope.row)" clearable></el-input>
+    </template>
+  </el-table-column>
 
-        <el-table-column label="用户名" prop="username">
-  <template slot-scope="scope">
-    <div v-if="!scope.row.editing" @dblclick="toggleEdit(scope.row)">
-      {{ scope.row.username }}
+          <el-table-column align="center" sortable prop="userId" label="用户ID" width="120">
+          </el-table-column>
+
+          <el-table-column align="center" sortable prop="email" label="邮件" min-width="120">
+          </el-table-column>
+
+          <el-table-column align="center" sortable prop="loginTime" label="最近登陆时间" min-width="120">
+          </el-table-column>
+
+          <el-table-column align="center" sortable prop="status" label="状态" min-width="120">
+            <template slot-scope="scope">
+              <!-- 进行判断状态的改变点击后会把islock转化为n或者y然后控制是否显示 -->
+              <el-switch :value="scope.row.status === 0 ? nshow : fshow" active-color="#13ce66" inactive-color="#ff4949" @change="editType(scope.$index, scope.row)">
+              </el-switch>
+            </template>
+          </el-table-column>
+
+  <!-- 修改用户类型 -->
+            <el-table-column align="center" sortable prop="roleVO.roleName" label="用户类型" width="150">
+    <template slot-scope="scope">
+      <!-- 下拉框通过插槽绑定数据确认刚开始的值 -->
+      <!-- 这个scoped.row必须存在代表着这一行的值 -->
+      <!-- 这个row是整一行的数据就是包括username都有 -->
+      <!-- v-model绑定的是用户的roleid这样子修改的时候就会把表格的roleid就会改变，就可以传递roleid给后端 -->
+      <!-- 每次切换数据的时候这个roleid会发生变换，这时候我们需要传递到后端使rolename也发生变化 -->
+      <el-select v-model="scope.row.roleVO.roleId" placeholder="请选择" @change="editUserRole(scope.row)">
+        <!-- 根据每个管理员的权限进行修改 -->
+        <el-option v-for="role in rolelist" :key="role.roleId" :label="role.roleName" :value="role.roleId"></el-option>
+      </el-select>
+    </template>
+  </el-table-column>
+
+        <el-table-column label="操作" min-width="150" align="center" >
+            <!-- 使用插槽解决了数据传输，因为表格内还放了一个按钮组件所以我们需要用到插槽进行组件中的数据传递-->
+        <template slot-scope="scope">
+            <!-- 这里scope.$index, scope.row两个数据就相当于当前行的索引以及当前行的数据，之后可以通过访问scope.row来访问这一行的所有数据 -->
+          <el-button size="mini" type="success" @click="resetpwd(scope.$index, scope.row)">重置密码</el-button>
+        </template>
+      </el-table-column>
+      </el-table><br>
+       <!-- 分页组件 -->
+     <el-pagination
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="currentPage"
+      background
+      :page-sizes="[1,3,5,10]"
+      :page-size="pagesize"
+      layout="total, sizes,  prev, pager, next, jumper"
+      :total="userTableData.length">
+    </el-pagination>
     </div>
-    <el-input v-else v-model="scope.row.username" @blur="saveChanges(scope.row)" clearable></el-input>
   </template>
-</el-table-column>
-
-        <el-table-column align="center" sortable prop="userId" label="用户ID" width="120">
-        </el-table-column>
-
-        <el-table-column align="center" sortable prop="email" label="邮件" min-width="120">
-        </el-table-column>
-
-        <el-table-column align="center" sortable prop="loginTime" label="最近登陆时间" min-width="120">
-        </el-table-column>
-
-        <el-table-column align="center" sortable prop="status" label="状态" min-width="120">
-          <template slot-scope="scope">
-            <!-- 进行判断状态的改变点击后会把islock转化为n或者y然后控制是否显示 -->
-            <el-switch :value="scope.row.status === 0 ? nshow : fshow" active-color="#13ce66" inactive-color="#ff4949" @change="editType(scope.$index, scope.row)">
-            </el-switch>
-          </template>
-        </el-table-column>
-
-<!-- 修改用户类型 -->
-          <el-table-column align="center" sortable prop="roleVO.roleName" label="用户类型" width="150">
-  <template slot-scope="scope">
-    <!-- 下拉框通过插槽绑定数据确认刚开始的值 -->
-    <!-- 这个scoped.row必须存在代表着这一行的值 -->
-    <!-- 这个row是整一行的数据就是包括username都有 -->
-    <!-- v-model绑定的是用户的roleid这样子修改的时候就会把表格的roleid就会改变，就可以传递roleid给后端 -->
-    <!-- 每次切换数据的时候这个roleid会发生变换，这时候我们需要传递到后端使rolename也发生变化 -->
-    <el-select v-model="scope.row.roleVO.roleId" placeholder="请选择" @change="editUserRole(scope.row)">
-      <!-- 根据每个管理员的权限进行修改 -->
-      <el-option v-for="role in rolelist" :key="role.roleId" :label="role.roleName" :value="role.roleId"></el-option>
-    </el-select>
-  </template>
-</el-table-column>
-
-      <el-table-column label="操作" min-width="150" align="center" >
-          <!-- 使用插槽解决了数据传输，因为表格内还放了一个按钮组件所以我们需要用到插槽进行组件中的数据传递-->
-      <template slot-scope="scope">
-          <!-- 这里scope.$index, scope.row两个数据就相当于当前行的索引以及当前行的数据，之后可以通过访问scope.row来访问这一行的所有数据 -->
-        <el-button size="mini" type="success" @click="resetpwd(scope.$index, scope.row)">重置密码</el-button>
-      </template>
-    </el-table-column>
-    </el-table><br>
-     <!-- 分页组件 -->
-   <el-pagination
-    @size-change="handleSizeChange"
-    @current-change="handleCurrentChange"
-    :current-page="currentPage"
-    background
-    :page-sizes="[1,3,5,10]"
-    :page-size="pagesize"
-    layout="total, sizes,  prev, pager, next, jumper"
-    :total="userTableData.length">
-  </el-pagination>
-  </div>
-</template>
 <script>
 import { getrole } from '@/api/admin'
 import MyModal from '@/components/myModal.vue'
@@ -171,6 +173,8 @@ export default {
   name: 'userPage',
   data () {
     return {
+      // 管理员管理写死roleid，进行筛选管理员
+      roleId: '1481929310323883495',
       dialogVisible: false, // 控制对话框显示状态
       newUser: { // 新用户信息对象
         userName: '',
@@ -204,7 +208,7 @@ export default {
       selectedRoleId: '', // LYX
 
       editForm: {
-      // 用户id
+        // 用户id
         userId: '',
         // 用户名
         userName: '',
@@ -381,7 +385,7 @@ export default {
       }
     },
     toggleEdit (row) {
-    // 动态添加 editing 属性
+      // 动态添加 editing 属性
       this.$set(row, 'editing', true)
     },
     // 初始页currentPage、初始每页数据数pagesize和数据data
@@ -426,15 +430,15 @@ export default {
     // 若不需要对异步函数后续的操作的话可以不添加async await，这里不添加async就会先执行前面两行代码，然后将请求放入异步，等待完成后就会刷新数据
     // 当然也可以全部当作异步函数加上async然后等待其他同步代码执行完成后就会执行这个事件内部的函数
     editType (index, row) {
-    // 根据当前状态切换状态值
-    // 这里正确的做法应该是先不要进行状态的修改在页面上而是点击后将状态取反传递给后端，然后执行成功后再重新获取更新一遍我们的用户列表数据这样就可以进行渲染了，但是如果数据一多会影响用户体验，并且如果先渲染可以增加页面流畅性
+      // 根据当前状态切换状态值
+      // 这里正确的做法应该是先不要进行状态的修改在页面上而是点击后将状态取反传递给后端，然后执行成功后再重新获取更新一遍我们的用户列表数据这样就可以进行渲染了，但是如果数据一多会影响用户体验，并且如果先渲染可以增加页面流畅性
       row.status = row.status === 0 ? 1 : 0
       console.log(row)
       // 在这里可以添加发送请求更新用户状态的逻辑
       this.changeInfo(row.status, row.userId)
     },
     resetpwd (index, row) {
-    // 后期需要用到用户id进行重置
+      // 后期需要用到用户id进行重置
       // this.resetpsd.userId = row.userId
       this.$confirm('确定要重置密码吗?', '信息', {
         confirmButtonText: '确定',
@@ -460,7 +464,6 @@ export default {
       const requestBody = {
         status: this.formInline.isLock,
         roleId: this.roleId
-
       }
 
       // 调用用户信息 API 获取基本用户数据
@@ -482,10 +485,7 @@ export default {
           // 在这里处理响应数据
           console.log(userData)
           // 从后端获取数据并赋值给表格数组
-          this.userTableData = userData.data.list.filter((item) => {
-            // 筛选出非管理员用户进行渲染
-            return item.roleVO.roleId !== '1481929310323883495'
-          })
+          this.userTableData = userData.data.list
           console.log(this.userTableData)
         })
         .catch(error => {
@@ -522,7 +522,6 @@ export default {
             message: '修改身份成功'
           })
           console.log(666, userData)
-          // 修改身份成功后重新获取最新数据进行渲染
           this.getData()
         })
         .catch(error => {
@@ -605,7 +604,6 @@ export default {
     editUserRole (row) {
       console.log(row.userId, row.roleVO.roleId)
       this.changeRole(row.userId, row.roleVO.roleId)
-      this.getData()
     },
     // 显示模态框 LYX
     showDialog () {
@@ -656,8 +654,8 @@ export default {
 }
 </script >
 
-<style scoped>
-.cell{
-  text-align: center;
-}
-</style>
+  <style scoped>
+  .cell{
+    text-align: center;
+  }
+  </style>
