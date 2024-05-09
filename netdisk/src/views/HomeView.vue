@@ -14,6 +14,7 @@
             <li><a @click="changeShow(1)">登录记录</a></li>
             <li><a @click="changeShow(2)">登录设备</a></li>
             <li><a @click="changeShow(4)">登录方式</a></li>
+            <li><a @click="changeShow(5)">会员中心</a></li>
           </ul>
         </nav>
       </div>
@@ -30,6 +31,9 @@
         </div>
         <div v-if="show===4" style="overflow: auto">
           <loginMethods/>
+        </div>
+        <div v-if="show===5" style="overflow: auto">
+          <vipCenter/>
         </div>
       </div>
       <div id="gap"></div>
@@ -62,12 +66,14 @@ import Devices from '@/components/devices.vue'
 import EnterHistory from '@/components/EnterHistory.vue'
 import loginMethods from '@/components/loginMethods.vue'
 import changeCode from '@/components/changeCode.vue'
+import vipCenter from '@/components/vipCenter.vue'
 export default {
   components: {
     Devices,
     EnterHistory,
     changeCode,
-    loginMethods
+    loginMethods,
+    vipCenter
   },
   data () {
     return {
@@ -282,6 +288,9 @@ nav ul li:nth-child(4) a {
 }
 nav ul li:nth-child(5) a {
   background-image: url('@/assets/登录方式.png');
+}
+nav ul li:nth-child(6) a {
+  background-image: url('@/assets/会员中心.png');
 }
 #avatar-preview {
   width: 90px;

@@ -8,6 +8,7 @@ import HomeView from '@/views/HomeView.vue'
 import adminPage from '@/views/admin/index.vue'
 import userPage from '@/views/admin/user.vue'
 import managePage from '@/views/admin/admin.vue'
+import vippage from '@/views/vipPage.vue'
 Vue.use(VueRouter)
 
 const router = new VueRouter({
@@ -26,6 +27,10 @@ const router = new VueRouter({
     {
       path: '/account',
       component: account
+    },
+    {
+      path: '/vip',
+      component: vippage
     },
     // 邮箱登陆路由配置
     {
