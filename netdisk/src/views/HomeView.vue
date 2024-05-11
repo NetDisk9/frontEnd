@@ -9,12 +9,14 @@
       <div id="area1" class="area">
         <nav>
           <ul>
-            <li><a @click="changeShow(0)">个人中心</a></li>
-            <li><a @click="changeShow(3)">更改密码</a></li>
-            <li><a @click="changeShow(1)">登录记录</a></li>
-            <li><a @click="changeShow(2)">登录设备</a></li>
-            <li><a @click="changeShow(4)">登录方式</a></li>
-            <li><a @click="changeShow(5)">会员中心</a></li>
+<!--            LYX-->
+            <li><a @click="changeShow(0)" :class="{selected: selectedLink === 0}">个人中心</a></li>
+            <li><a @click="changeShow(1)" :class="{selected: selectedLink === 1}">更改密码</a></li>
+            <li><a @click="changeShow(2)" :class="{selected: selectedLink === 2}">登录记录</a></li>
+            <li><a @click="changeShow(3)" :class="{selected: selectedLink === 3}">登录设备</a></li>
+            <li><a @click="changeShow(4)" :class="{selected: selectedLink === 4}">登录方式</a></li>
+            <li><a @click="changeShow(5)" :class="{selected: selectedLink === 5}">会员中心</a></li>
+
           </ul>
         </nav>
       </div>
@@ -39,25 +41,25 @@
       <div id="gap"></div>
       <div id="area3">
         <div style="display: flex; justify-content: center; align-items: center; margin: 20px 5px 20px 20px">
-          <div style="display: flex; justify-content: center; align-items: center;">
-            <div id="avatar-preview" :style="{backgroundImage: 'url(' + avatarPreviewUrl + ')'}"/>
-          </div>
-          <div class="upload-container" style="display: flex;">
-            <label for="avatar-input" id="avatar-upload" @change="handleAvatarChange">修改</label>
+         <!--          LYX-->
+         <div style="display: flex; justify-content: center; align-items: center;">
+            <div id="avatar-preview" :style="{backgroundImage: 'url(' + avatarPreviewUrl + ')'}" @click="triggerAvatarChange"/>
             <input type="file" id="avatar-input" @change="handleAvatarChange">
-          </div>
+<!--            LYX-->
         </div>
 
         <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
           <div style="display: flex; justify-content: center; align-items:center; width: 100%" >
-            <div id="nickname" style="display: flex; justify-content: center; margin-left: 20px">昵称</div>
-            <div id="nickname-edit" @click="handleNicknameEdit" style="font-size: 16px;">修改</div>
+           <!--            LYX-->
+           <div id="nickname" @click="handleNicknameEdit" style="display: flex; justify-content: center; margin-left: 20px">昵称</div>
+<!--            LYX-->
           </div>
           <div id="user-id" style="display: flex">user_id</div>
         </div>
       </div>
       <input type="file" id="avatar-input" accept="image/*">
     </div>
+  </div>
   </div>
 </template>
 
@@ -97,8 +99,12 @@ export default {
     this.usertoken = this.$store.state.usertoken
   },
   methods: {
+    triggerAvatarChange () {
+      document.getElementById('avatar-input').click()
+    },
     changeShow (index) {
       this.show = index
+      this.selectedLink = index
     },
     getUserInfo () {
       // console.log("sdffdf");
@@ -213,7 +219,8 @@ body {
 }
 #divider {
   width: 100%;
-  border-bottom: 2px solid black;
+  border-bottom: 12px solid #ecedf3;
+
 }
 .logo {
   width:160px ;
@@ -229,6 +236,8 @@ body {
   display: flex;
   justify-content: space-between;
   height: 100vh;
+  background: #ecedf3;
+
 }
 .area {
   height: 100%;
@@ -236,24 +245,30 @@ body {
   justify-content: center;
   position: relative;
 }
+/*LYX*/
 #area1 {
   min-width: 180px;
   width: 180px;
   background-color: white;
+  border-radius: 5px;
 }
 #area2 {
-  width: 64%;
+  flex: 1;
+  width: 100%;
   background-color: white;
+  border-radius: 5px;
 }
 #area3 {
-  width: 160px;
+  width: 200px;
   min-width: 160px;
   background-color: white;
+  border-radius: 5px;
 }
 #gap {
-  width: 3%;
-  background-color: #F2F4FA;
+  width: 12px;
+  background-color: #ecedf3;
 }
+/*LYX*/
 nav ul {
   padding: 0;
   margin: 0;
@@ -385,5 +400,9 @@ h3 {
   margin-bottom: 10px;
   color: #333;
   font-weight: lighter;
+}
+/* LYX */
+nav ul li a.selected {
+  color: #2196f3;
 }
 </style>
