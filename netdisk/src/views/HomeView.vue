@@ -273,6 +273,7 @@ nav ul li a {
   background-repeat: no-repeat;
   background-position: -2px 28px ;
 }
+
 /* Define different icons for each navigation item */
 nav ul li:nth-child(1) a {
   background-image: url('@/assets/个人中心.png');

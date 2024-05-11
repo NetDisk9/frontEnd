@@ -17,6 +17,7 @@
             <div class="fianl" style="display: none;">
             </div>
         </div>
+        <!-- 主要内容区域 -->
         <div class="main-area"><!-- guide-cashier-main-area no-top -->
             <div class="left-part"><!-- guide-cashier-tab-split -->
                 <div class="column-out"><!-- guide-main-tab-container-placeholder double -->
@@ -40,7 +41,7 @@
                     </div>
                     <div class="productList svip"><!-- productList svip -->
                         <div class="scrollInstance productListScroll"><!-- scrollInstance productListScroll -->
-                            <div class="item"@click="rechargeOneYear"><!-- item -->
+                            <div class="item" @click="rechargeOneYear"><!-- item -->
                                 <div class="flex-item first-sku is-active svip main"><!-- flex-item first-sku is-active svip main -->
                                     <div class="data-v-13a4ca74"><!-- data-v-13a4ca74 -->
                                         <div class="product-name">一年</div><!-- product-name -->
@@ -52,7 +53,7 @@
                                 </div>
                             </div>
 
-                            <div class="item"@click="rechargeThreeMonths"><!-- item -->
+                            <div class="item" @click="rechargeThreeMonths"><!-- item -->
                                 <div class="flex-item first-sku is-active svip main"><!-- flex-item first-sku is-active svip main -->
                                     <div class="data-v-13a4ca74"><!-- data-v-13a4ca74 -->
                                         <div class="product-name">三个月</div><!-- product-name -->
@@ -64,7 +65,7 @@
                                 </div>
                             </div>
 
-                            <div class="item"@click="rechargeOneMonth"><!-- item -->
+                            <div class="item" @click="rechargeOneMonth"><!-- item -->
                                 <div class="flex-item first-sku is-active svip main"><!-- flex-item first-sku is-active svip main -->
                                     <div class="data-v-13a4ca74"><!-- data-v-13a4ca74 -->
                                         <div class="product-name">一个月</div><!-- product-name -->
@@ -107,7 +108,8 @@ export default {
     return {
       username: '', // 初始化用户名为空
       endTime: '', // 初始化会员到期时间为空
-      Authorization: this.$store.state.usertoken// 设置认证信息
+      Authorization: this.$store.state.usertoken, // 设置认证信息
+      userId: ''
     }
   },
   mounted () {
@@ -125,11 +127,12 @@ export default {
         })
 
         const data = await response.json()
-
+        console.log(data)
         // 检查返回的数据是否包含 username 和 endTime 属性
         if (data.data && data.data.username && data.data.vipVO && data.data.vipVO.endTime) {
           this.username = data.data.username
           this.endTime = data.data.vipVO.endTime
+          this.userId = data.data.userId
         } else {
           console.error('User info data is incomplete:', data)
         }
@@ -138,7 +141,7 @@ export default {
       }
     },
 
-    async rechargeVIP (duration, money) {
+    async rechargeVIP (userId, money, duration) {
       try {
         const response = await fetch('http://8.134.178.176:8080/user/vip', {
           method: 'PUT',
@@ -147,7 +150,7 @@ export default {
             Authorization: this.$store.state.usertoken
           },
           body: JSON.stringify({
-            userId: this.$store.state.userId, // 用户ID
+            userId: userId, // 用户ID
             money: money, // 充值金额
             duration: duration // VIP期限
           })
@@ -157,9 +160,19 @@ export default {
 
         // 检查返回的数据
         if (response.ok) {
+          this.$message({
+            message: ('VIP充值成功!'),
+            type: 'success',
+            duration: 2000
+          })
           console.log('VIP充值成功，VIP结束时间：', data.data)
         // 在这里可以更新页面上的VIP结束时间显示
         } else {
+          this.$message({
+            message: ('VIP充值失败!'),
+            type: 'error',
+            duration: 2000
+          })
           console.error('VIP充值失败:', data)
         // 在这里可以处理充值失败的情况
         }
@@ -170,15 +183,18 @@ export default {
 
     // 点击一年充值区域触发的方法
     rechargeOneYear () {
-      this.rechargeVIP(12, 360) // 一年充值，期限为12个月，金额为360元
+      this.rechargeVIP(this.userId, 360, 365) // 一年充值，期限为12个月，金额为360元
+      this.fetchUserInfo()
     },
     // 点击三个月充值区域触发的方法
     rechargeThreeMonths () {
-      this.rechargeVIP(3, 120) // 三个月充值，期限为3个月，金额为120元
+      this.rechargeVIP(this.userId, 120, 90) // 三个月充值，期限为3个月，金额为120元
+      this.fetchUserInfo()
     },
     // 点击一个月充值区域触发的方法
     rechargeOneMonth () {
-      this.rechargeVIP(1, 40) // 一个月充值，期限为1个月，金额为40元
+      this.rechargeVIP(this.userId, 40, 30) // 一个月充值，期限为1个月，金额为40元
+      this.fetchUserInfo()
     }
   }
 }
@@ -235,8 +251,8 @@ export default {
     margin: 0 8px 8px;
     overflow: hidden;
     position: absolute;
-    top: 90px;
-    left: 300px;
+    top: 10%;
+    left: 30%;
     width: auto;
     padding-top: 70px;
 }

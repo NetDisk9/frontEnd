@@ -21,10 +21,10 @@
         </el-form-item>
 
         <el-form-item label="" prop="password">
-            <el-input type="password" class="codeinput" v-model="form.password" placeholder="请输入密码"></el-input>
+            <el-input show-password class="codeinput" v-model="form.password" placeholder="请输入密码"></el-input>
         </el-form-item>
         <span class="enroll"><router-link to="/enroll">立即注册</router-link></span>
-        <span class="forget"><a href="">忘记密码</a></span><br>
+        <span class="forget"><a href="#/forget">忘记密码</a></span><br>
         <el-form-item>
           <!-- 这里括号内需要引入的是表单名要加上单引号 -->
             <el-button @click="submit('form')" class="login_button" type="primary"> 登 录 </el-button>
@@ -222,25 +222,27 @@ export default {
 
 .email-login{
   width: 100%;
-  height: 960px;
+  height: 100vh;
   background-size: 100% 100%;
   // background-image: url(/Users/linmingyao/Documents/js的学习·/netdisk/src/img/bgc.png);
   // background-color: rgba(255, 255, 255, 0.5); /* 白色背景，透明度为 0.5 */
   background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('@/assets/bgc.png') no-repeat 0% 20%/ cover;
 ;
-
+position: relative;
 }
 .test{
 width: 800px;
 height: 400px;
-margin: 0 auto;
 background-color: #ffffff;
 border-radius: 15px;
 padding-top: 40px;
 box-shadow: 0 0 25px #cac6c6;
 position: absolute;
-  left: 400px;
-  top: 200px;
+  left: 0px;
+  top: 0px;
+  bottom: 0px;
+  right: 0px;
+  margin: auto auto;
 
 }
 .write{

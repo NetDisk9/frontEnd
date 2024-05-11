@@ -26,10 +26,11 @@ export default {
 
 <style lang="less" scoped>
 .home{
-    width: 100%;
-    height: 960px;
+    width: 100vw;
+    height: 100vh;
     background-image: url(@/assets/home.png);
     background-size: 100% 100%;
+    position: relative;
 }
 .loginbtn{
     position: absolute;

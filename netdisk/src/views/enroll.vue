@@ -20,11 +20,11 @@
         </el-form-item>
 
         <el-form-item label="密码" prop="pass">
-            <el-input type="password" class="codeinput" v-model="form.pass" placeholder="请输入密码"></el-input>
+            <el-input show-password class="codeinput" v-model="form.pass" placeholder="请输入密码"></el-input>
         </el-form-item>
 
         <el-form-item label="确认密码" prop="checkPass">
-            <el-input type="password" class="codeinput" v-model="form.checkPass" placeholder="再次请输入密码"></el-input>
+            <el-input show-password class="codeinput" v-model="form.checkPass" placeholder="再次请输入密码"></el-input>
         </el-form-item>
 
         <el-form-item  label="邮箱" prop="email">
@@ -219,24 +219,26 @@ export default {
 
 .email-login{
   width: 100%;
-  height: 960px;
+  height: 100vh;
   background-size: 100% 100%;
 
   background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(@/assets/bgc.png) no-repeat 0% 20%/ cover;
 ;
-
+position: relative;
 }
 .test{
 width: 800px;
 height: 550px;
-margin: 0 auto;
 background-color: #ffffff;
 border-radius: 15px;
 padding-top: 40px;
 box-shadow: 0 0 25px #cac6c6;
 position: absolute;
-  left: 400px;
-  top: 200px;
+  left: 0px;
+  top: 0px;
+  bottom: 0px;
+  right: 0px;
+  margin: auto auto;
 
 }
 .write{

@@ -9,6 +9,8 @@ import adminPage from '@/views/admin/index.vue'
 import userPage from '@/views/admin/user.vue'
 import managePage from '@/views/admin/admin.vue'
 import vippage from '@/views/vipPage.vue'
+import forgetPSW from '@/views/login/forgetPSW.vue' // LYX
+
 Vue.use(VueRouter)
 
 const router = new VueRouter({
@@ -62,8 +64,13 @@ const router = new VueRouter({
         }
       ]
 
+    },
+    // LYX
+    {
+      // 忘记密码界面
+      path: '/forget',
+      component: forgetPSW
     }
-
   ]
 })
 

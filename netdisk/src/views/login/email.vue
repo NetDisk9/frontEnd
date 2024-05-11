@@ -23,9 +23,10 @@
           <el-form-item label="" prop="password">
               <el-input class="codeinput" v-model="form.password" placeholder="请输入验证码"></el-input>
           </el-form-item>
+
           <el-button :disabled="disable" @click="getcode" class="getcode">{{ text }}</el-button>
           <span class="enroll"><router-link to="/enroll">立即注册</router-link></span>
-          <span class="forget"><a href="">忘记密码</a></span><br>
+          <span class="forget"><a href="#/forget">忘记密码</a></span><br>
           <el-form-item>
               <el-button @click="submit('form')" class="login_button" type="primary"> 登 录 </el-button>
           </el-form-item>
@@ -236,22 +237,27 @@ export default {
   <style lang="less" scoped>
 .email-login{
   width: 100%;
-  height: 960px;
+  height: 100vh;
   background-size: 100% 100%;
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(@/assets/bgc.png) no-repeat 0% 20%/ cover;
+  // background-image: url(/Users/linmingyao/Documents/js的学习·/netdisk/src/img/bgc.png);
+  // background-color: rgba(255, 255, 255, 0.5); /* 白色背景，透明度为 0.5 */
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('@/assets/bgc.png') no-repeat 0% 20%/ cover;
+;
+position: relative;
 }
-
 .test{
-  position: absolute;
-  left: 400px;
-  top: 200px;
-  width: 800px;
-  height: 400px;
-  // margin: 0 auto;
-  background-color: #ffffff;
-  border-radius: 15px;
-  padding-top: 40px;
-  box-shadow: 0 0 25px #cac6c6;
+width: 800px;
+height: 400px;
+background-color: #ffffff;
+border-radius: 15px;
+padding-top: 40px;
+box-shadow: 0 0 25px #cac6c6;
+position: absolute;
+  left: 0px;
+  top: 0px;
+  bottom: 0px;
+  right: 0px;
+  margin: auto auto;
 
 }
 .write{

@@ -494,6 +494,8 @@ export default {
             message: '权限不足！'
           })
           console.error('获取用户数据时出错:', error)
+          // 权限不足的时候进行跳转用户界面
+          this.$router.push('/homeview')
         })
     },
 
