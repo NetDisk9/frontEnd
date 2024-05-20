@@ -20,6 +20,7 @@ const router = new VueRouter({
       path: '/',
       component: home
     },
+
     // 注册路由配置
     {
       path: '/enroll',
@@ -71,6 +72,7 @@ const router = new VueRouter({
       path: '/forget',
       component: forgetPSW
     }
+
   ]
 })
 
