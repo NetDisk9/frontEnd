@@ -275,6 +275,8 @@ export default {
           return require('@/assets/music.png')
         case 'ppt':
           return require('@/assets/ppt.png')
+        case 'zip':
+          return require('@/assets/zip.png')
 
           // 文件夹没有后缀名
         default:
