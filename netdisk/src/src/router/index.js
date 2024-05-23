@@ -10,7 +10,6 @@ import userPage from '@/views/admin/user.vue'
 import managePage from '@/views/admin/admin.vue'
 import vippage from '@/views/vipPage.vue'
 import forgetPSW from '@/views/login/forgetPSW.vue' // LYX
-import filelist from '@/components/fileList.vue'
 
 Vue.use(VueRouter)
 
@@ -35,10 +34,6 @@ const router = new VueRouter({
     {
       path: '/vip',
       component: vippage
-    },
-    {
-      path: '/file',
-      component: filelist
     },
     // 邮箱登陆路由配置
     {
