@@ -28,6 +28,21 @@ export const getFile = (Authorization, page, pageSize, pid) => {
   })
 }
 
+export const getshareFile = (Authorization, page, pageSize, link, pid) => {
+  return request.get('/file/share/list', {
+    headers: {
+      Authorization
+    },
+    params: {
+      // 写死先进行测试
+      page,
+      pageSize,
+      pid,
+      link
+    }
+  })
+}
+
 // 删除文件
 export const deleteFile = (Authorization, fileIds) => {
   return request.delete('/file/delete', {
@@ -73,6 +88,21 @@ export const getFileByPath = (Authorization, path) => {
       page: 1,
       pageSize: 10,
       status: 0
+    }
+  })
+}
+
+export const forCates = (Authorization, page, pageSize, category) => {
+  console.log('categoty')
+  return request.get('/file/list', {
+    headers: {
+      Authorization
+    },
+    params: {
+      // 写死先进行测试
+      page,
+      pageSize,
+      category
     }
   })
 }
