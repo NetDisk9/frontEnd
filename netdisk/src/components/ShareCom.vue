@@ -1,6 +1,6 @@
 <template>
     <div>
-      <el-dialog width="500px" :visible.sync="visible" :title="'分享文件：' + fileName">
+      <el-dialog width="500px" :visible.sync="isshare" @close="closeDialog" :title="'分享文件：' + sharefilename">
         <div class="share">
           <span>链接分享</span>
         </div>
@@ -43,13 +43,14 @@
           <el-button round type="primary" @click="createLink">创建链接</el-button>
         </div>
       </el-dialog>
-
+<!-- 父组件需要进行监听关闭请求 -->
       <result-modal
         :visible.sync="resultModalVisible"
         :link="generatedLink"
         :code="generatedCode"
-        :file-name="fileName"
+        :file-name="sharefilename"
         :time="time"
+        @close-result-modal="closeResultModal"
       ></result-modal>
     </div>
   </template>
@@ -59,16 +60,25 @@ import ResultModal from './ResultModel.vue'
 import { createShare } from '@/api/share'
 
 export default {
+  props: {
+    sharefileid: {
+      required: true
+    },
+    sharefilename: {
+      required: true
+    },
+    isshare: {
+      type: Boolean,
+      required: true
+    }
+  },
   components: {
     ResultModal
   },
   data () {
     return {
-      visible: true,
       // 选择有效期默认7天
       validity: '7天',
-      // 文件名
-      fileName: '文件夹1',
       // 是否有提取码
       hasCode: true,
       autoGenerateCode: true,
@@ -80,15 +90,24 @@ export default {
       generatedCode: '',
       token: this.$store.state.usertoken,
       userFileid: '1784258377565794305',
-      time: 7
+      time: 7,
+      localIsshare: this.isshare, // 使用一个本地变量来同步 prop
+      Visible: false
     }
   },
+
   watch: {
     customCode (value) {
       this.validateCode(value)
     }
   },
   methods: {
+    closeResultModal () {
+      this.resultModalVisible = false
+    },
+    closeDialog () {
+      this.$emit('update:isshare', false) // 通知父组件关闭对话框
+    },
     async createLink () {
       // 确定有效期的值
       let validityValue
@@ -112,7 +131,7 @@ export default {
       }
       // 调用分享接口
       try {
-        const res = await createShare(this.token, validityValue, this.userFileid, this.customCode)
+        const res = await createShare(this.token, validityValue, this.sharefileid, this.customCode)
         console.log(res.data)
         // 如果调用成功进行对应数据的赋值并且传递给子组件
         if (res && res.data) {
@@ -120,8 +139,8 @@ export default {
           this.generatedCode = res.data.data.code
           this.time = validityValue
           this.resultModalVisible = true
-          this.visible = false
           console.log(this.time)
+          this.$emit('update:isshare', false) // 关闭分享弹窗
         }
       } catch (error) {
         this.$message({

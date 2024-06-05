@@ -23,27 +23,27 @@
 </template>
 <script>
 export default {
-    name: 'savePage',
-    data () {
-        return {
-            username: '未知用户', // 默认显示 "未知用户"
-            avatarPreviewUrl: '', // 初始化为默认值或空字符串
-            codeInput: '', // 用于绑定输入框中的提取码
-            isShareCancelled: false,
-            isShareExpired: false
-        }
-    },
-    computed: {
-        surl () {
-            return this.$route.params.surl
-        }
-    },
-    async created () {
-        this.getshareMessage()
-        console.log(this.$route.params.surl)
-    },
-    methods: {
-      // 检查链接是否过期
+  name: 'savePage',
+  data () {
+    return {
+      username: '未知用户', // 默认显示 "未知用户"
+      avatarPreviewUrl: '', // 初始化为默认值或空字符串
+      codeInput: '', // 用于绑定输入框中的提取码
+      isShareCancelled: false,
+      isShareExpired: false
+    }
+  },
+  computed: {
+    surl () {
+      return this.$route.params.surl
+    }
+  },
+  async created () {
+    this.getshareMessage()
+    console.log(this.$route.params.surl)
+  },
+  methods: {
+    // 检查链接是否过期
     formatDate (date) {
       const year = date.getFullYear()
       const month = String(date.getMonth() + 1).padStart(2, '0') // 月份从0开始，所以需要加1
@@ -54,8 +54,8 @@ export default {
       return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
     },
     getshareMessage () {
-        console.log('已发送请求')
-        fetch('http://8.134.178.176:8080/file/share/info?link=' + this.$route.params.surl, {
+      console.log('已发送请求')
+      fetch('http://8.134.178.176:8080/file/share/info?link=' + this.$route.params.surl, {
         method: 'GET',
         headers: {
           Authorization: this.$store.state.usertoken
@@ -103,8 +103,8 @@ export default {
     },
     gosubmit () {
       const url = `http://8.134.178.176:8080/file/share/code/check?link=${this.$route.params.surl}&code=${this.codeInput}`
-        console.log(this.codeInput)
-        fetch(url, {
+      console.log(this.codeInput)
+      fetch(url, {
         method: 'GET',
         headers: {
           Authorization: this.$store.state.usertoken
@@ -116,27 +116,27 @@ export default {
             // this.$router.push({ name: 'save', params: { surl: this.$route.params.surl } }).catch(err => err)
           } else {
             throw new Error('验证码错误')
-        .catch(error => {
-          console.error('发生错误:', error.message)
-          // alert('获取用户信息失败，请重试！')
-        })
+              .catch(error => {
+                console.error('发生错误:', error.message)
+                // alert('获取用户信息失败，请重试！')
+              })
           }
         })
         .then(data => {
           if (data && data.code === 200) {
             console.log(data.code)
             this.$message({
-                message: '验证码正确，提取文件中',
-                type: 'success',
-                duration: 2000
+              message: '验证码正确，提取文件中',
+              type: 'success',
+              duration: 2000
             })
             this.$router.push({ name: 'save', params: { surl: this.$route.params.surl } }).catch(err => err)
           } else {
             console.log(data.code)
             this.$message({
-                message: '验证码错误，请重新输入',
-                type: 'error',
-                duration: 2000
+              message: '验证码错误，请重新输入',
+              type: 'error',
+              duration: 2000
             })
           }
         })
@@ -155,7 +155,7 @@ export default {
           // alert('获取用户信息失败，请重试！')
         })
     }
-    }
+  }
 }
 </script>
 <style lang="less" scoped>

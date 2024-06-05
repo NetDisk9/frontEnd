@@ -9,7 +9,6 @@ export const createShare = (Authorization, time, userFileId, code) => {
       time,
       userFileId,
       code
-
     }
   })
 }

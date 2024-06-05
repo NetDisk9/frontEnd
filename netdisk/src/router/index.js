@@ -12,8 +12,8 @@ import vippage from '@/views/vipPage.vue'
 import forgetPSW from '@/views/login/forgetPSW.vue' // LYX
 import filelist from '@/components/fileList.vue'
 import savePage from '@/views/savePage.vue'
-import save from '@/views/save.vue'
-import share from '@/components/Share'
+import save from '@/views/saveView.vue'
+import share from '@/components/ShareCom.vue'
 
 Vue.use(VueRouter)
 

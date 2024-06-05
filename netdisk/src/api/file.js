@@ -92,6 +92,43 @@ export const getFileByPath = (Authorization, path) => {
   })
 }
 
+export const getShareFile = (Authorization, page, pageSize) => {
+  return request.get('/file/share/record/list', {
+    headers: {
+      Authorization
+    },
+    params: {
+      page,
+      pageSize,
+      status: 0
+    }
+  })
+}
+
+export const getDownloadFile = (Authorization, page, pageSize) => {
+  return request.get('/file/download/record/list', {
+    headers: {
+      Authorization
+    },
+    params: {
+      page,
+      pageSize,
+      status: 0
+    }
+  })
+}
+
+export const cancelShare = (Authorization, shareId) => {
+  return request.delete('/file/share/cancel', {
+    headers: {
+      Authorization
+    },
+    params: {
+      shareId
+    }
+  })
+}
+
 export const forCates = (Authorization, page, pageSize, category) => {
   console.log('categoty')
   return request.get('/file/list', {

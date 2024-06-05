@@ -23,9 +23,13 @@
               style="width: 150px;"
               @open="handleOpen"
               @close="handleClose">
-              <el-menu-item index="1" style="font-size: 20px;">
+              <el-menu-item index="1" style="font-size: 20px;" @click="() => {this.showMume = 1; this.selectedRows = []; this.clearTableSelection()}">
                 <i class="el-icon-folder-opened" style="font-size: 24px;"></i>
                 <span style="font-size: 20px;">我的文件</span>
+              </el-menu-item>
+              <el-menu-item index="2" style="font-size: 20px;" @click="() => {this.showMume = 2; this.selectedRows = []; this.clearTableSelection()}">
+                <i class="el-icon-position" style="font-size: 24px;"></i>
+                <span style="font-size: 20px;">文件分享</span>
               </el-menu-item>
             </el-menu>
           </el-col>
@@ -33,8 +37,8 @@
       </div>
       <div id="gap"></div>
       <div id="area3">
-        <el-col :span="12">
-          <el-menu
+        <el-col :span="12" >
+          <el-menu v-if="showMume === 1"
             style="width:180px;"
             default-active="2"
             class="el-menu-vertical-demo"
@@ -85,6 +89,25 @@
               </el-menu-item-group>
             </el-submenu>
           </el-menu>
+          <el-menu v-if="showMume === 2"
+            style="width:180px;"
+            default-active="1"
+            class="el-menu-vertical-demo"
+            @open="handleOpen"
+            @close="handleClose">
+            <el-menu-item index="1" @click="getShareHistory">
+              <template slot="title">
+                <i class="el-icon-position"></i>
+                <span style="font-size: 20px;">分享记录</span>
+              </template>
+            </el-menu-item>
+            <el-menu-item index="2" @click="getDownloadHistory">
+              <template slot="title">
+                <i class="el-icon-download"></i>
+                <span style="font-size: 20px;">转存记录</span>
+              </template>
+            </el-menu-item>
+          </el-menu>
         </el-col>
       </div>
       <div id="gap"></div>
@@ -106,12 +129,12 @@
             </el-breadcrumb>
 
             <!--    工具栏-->
-            <div style="margin: 20px 10% 20px 20px; display: flex; justify-content: right">
+            <div v-if="showMume === 1" style="margin: 20px 10% 20px 20px; display: flex; justify-content: right">
               <el-button type="primary" size="small" icon="el-icon-download" @click="downloadFiles"
                          :disabled="this.selectedRows.length === 0">下载
               </el-button>
-              <el-button type="primary" size="small" icon="el-icon-share" @click="shareFiles"
-                         :disabled="this.selectedRows.length === 0">分享
+              <el-button type="primary" size="small" icon="el-icon-share" @click="shareFile"
+                         :disabled="this.selectedRows.length !== 1">分享
               </el-button>
               <el-button type="primary" size="small" icon="el-icon-delete" @click="deleteFiles"
                          :disabled="this.selectedRows.length === 0">删除
@@ -124,6 +147,16 @@
               </el-button>
               <el-button type="primary" size="small" icon="el-icon-plus" @click="showNewDia"
                          :disabled="this.selectedRows.length !== 0">新建文件夹
+              </el-button>
+            </div>
+
+            <!--    工具栏-->
+            <div v-if="showMume === 2" style="margin: 20px 10% 20px 20px; display: flex; justify-content: right">
+              <el-button type="primary" size="small" icon="el-icon-copy-document" @click="copyShare"
+                         :disabled="this.selectedRows.length !== 1">复制链接
+              </el-button>
+              <el-button type="primary" size="small" icon="el-icon-delete" @click="deleteShare"
+                         :disabled="this.selectedRows.length === 0">删除分享
               </el-button>
             </div>
 
@@ -157,7 +190,7 @@
             </MyModal>
 
             <!-- 表格区域 -->
-            <el-table ref="table" v-if="isTableVisible" size="small" @selection-change="selectChange" :row-key="getKey"
+            <el-table ref="table" v-if="isTableVisible && showMume === 1" size="small" @selection-change="selectChange" :row-key="getKey"
                       :data="userTableData.slice((currentPage - 1) * pagesize, currentPage * pagesize)" style="width: 100%;">
               <!-- 复选框 -->
               <el-table-column align="center" type="selection" width="50" :reserve-selection="true"></el-table-column>
@@ -167,6 +200,17 @@
                   <div :class="{ 'cut-row': isCut(row) }"  class="file-cell">
                     <img :src="getFileIcon(row.fileName)" class="file-icon" alt="file icon" />
                     <a id="filetext" href="javascript:void(0);" @click="openfile(row)">{{ row.fileName }}</a>
+                    <div class="hover-icons">
+                      <img src="@/assets/share.png" @click="shareFiles(row)" />
+                      <img src="@/assets/download.png" @click="downloadFiles(row)" />
+                      <el-dropdown @command="handleCommand">
+                        <img src="@/assets/more.png" @click="$event.stopPropagation()" @click.native="showDropdown(row)" />
+                        <el-dropdown-menu slot="dropdown">
+                        <button class="dropdown-button" @click="copySelected">Copy</button>
+                        <button class="dropdown-button" @click="cutSelected">Cut</button>
+                        <button class="dropdown-button" @click="pasteClipboard">Paste</button>
+                        </el-dropdown-menu>
+                      </el-dropdown>                    </div>
                   </div>
                 </template>
               </el-table-column>
@@ -174,6 +218,43 @@
               <el-table-column align="center" sortable prop="fileSize" label="大小" min-width="120"></el-table-column>
               <!-- 修改时间 -->
               <el-table-column align="center" sortable prop="updateTime" label="最近修改时间" min-width="120"></el-table-column>
+            </el-table>
+
+            <el-table ref="table" v-if="isTableVisible && showMume === 2" size="small" @selection-change="selectChange" :row-key="getKey"
+                      :data="shareTableData.slice((currentPage - 1) * pagesize, currentPage * pagesize)" style="width: 100%;">
+              <!-- 复选框 -->
+              <el-table-column align="center" type="selection" width="50" :reserve-selection="true"></el-table-column>
+              <!-- 文件名 -->
+              <el-table-column align="left" sortable prop="fileName" label="文件名" width="500">
+                <template v-slot="{ row }">
+                  <div :class="{ 'cut-row': isCut(row) }"  class="file-cell">
+                    <img :src="getFileIcon(row.fileName)" class="file-icon" alt="file icon" />
+                    <a id="filetext">{{ row.fileName }}</a>
+                    <div class="hover-icons">
+                      <img src="@/assets/share.png" @click="shareFile(row)" />
+                      <img src="@/assets/download.png" @click="downloadFiles(row)" />
+                      <el-dropdown @command="handleCommand">
+                        <img src="@/assets/more.png" @click="$event.stopPropagation()" @click.native="showDropdown(row)" />
+                        <el-dropdown-menu slot="dropdown">
+                        <button class="dropdown-button" @click="copySelected">Copy</button>
+                        <button class="dropdown-button" @click="cutSelected">Cut</button>
+                        <button class="dropdown-button" @click="pasteClipboard">Paste</button>
+                        </el-dropdown-menu>
+                      </el-dropdown>
+                    </div>
+                  </div>
+                </template>
+              </el-table-column>
+              <!-- 分享时间 -->
+              <el-table-column align="center" sortable prop="begTime" label="分享时间" min-width="120"></el-table-column>
+              <!-- 状态 -->
+              <el-table-column align="center" sortable prop="available" label="状态" min-width="120">
+                <template v-slot="{ row }">
+                  <div :class="{ highlight: row.status === 1 }">{{ row.available }}</div>
+                </template>
+              </el-table-column>
+              <!-- 浏览次数 -->
+              <el-table-column align="center" sortable prop="count" label="浏览次数" min-width="120"></el-table-column>
             </el-table>
 
             <!-- 分页组件 -->
@@ -201,20 +282,34 @@
         </el-dropdown-menu>
       </el-dropdown>
     </div>
+    <!-- 。sync是updata isshare的语法糖用于监听这个isshare变化 -->
+    <ShareCom :isshare.sync="isshare" :sharefileid="sharefileid" :sharefilename="sharefilename"></ShareCom>
   </div>
 </template>
 <script>
-import { createDir, deleteFile, getFile, renameFile, forCates } from '@/api/file'
+import ShareCom from './ShareCom.vue'
+import {
+  createDir,
+  deleteFile,
+  getFile,
+  renameFile,
+  forCates,
+  getShareFile,
+  getDownloadFile,
+  cancelShare
+} from '@/api/file'
 import MyModal from '@/components/myModal.vue'
 import axios from 'axios'
 export default {
-  components: { MyModal },
+  components: { MyModal, ShareCom },
   data () {
     return {
       // 面包屑渲染数据
       list: [],
       // 渲染文件列表数组
       userTableData: [],
+      // 渲染分享列表数组
+      shareTableData: [],
       // 分页组件初始页面
       currentPage: 1,
       // 每一页的总条数 这里我默认设置成10条每一个页面
@@ -241,11 +336,17 @@ export default {
       },
       // New data property to track the clicked row
       clickedRow: null,
-      cutFiles: [] // Array to store IDs of cut files
+      cutFiles: [], // Array to store IDs of cut files
+      showMume: 1,
+      // 分享的文件名和文件id
+      sharefileid: '',
+      sharefilename: '',
+      isshare: false
     }
   },
   async created () {
     await this.allfile()
+    await this.getShareHistory()
     this.getUserInfo()
   },
   methods: {
@@ -388,6 +489,45 @@ export default {
         this.isLoading = false
       }
     },
+    // 获取分享记录
+    async getShareHistory () {
+      const res = await getShareFile(this.token, 1, 100)
+      this.shareTableData = res.data.data.list
+      this.list = []
+      console.log(res)
+      for (let i = 0; i < this.shareTableData.length; i++) {
+        this.shareTableData[i].count += '次'
+        this.shareTableData[i].status = 0
+
+        let begin, end
+        // eslint-disable-next-line prefer-const
+        begin = new Date(this.shareTableData[i].begTime)
+        // eslint-disable-next-line prefer-const
+        end = new Date(this.shareTableData[i].endTime)
+
+        if (end - begin < 0) {
+          this.shareTableData[i].available = '已失效'
+        }
+
+        const gapTime = (end - begin) / 1000
+        if (gapTime > 60 * 60 * 24) {
+          // 转化为天数
+          this.shareTableData[i].available = Math.floor(gapTime / (60 * 60 * 24)) + '天后失效'
+        } else {
+          // 转化为小时数
+          this.shareTableData[i].available = Math.floor(gapTime / (60 * 60)) + '小时后失效'
+          this.shareTableData[i].status = 1
+        }
+      }
+    },
+    // 获取转存记录
+    async getDownloadHistory () {
+      const res = await getDownloadFile(this.token, 1, 100)
+      this.shareTableData = res.data.data.list
+      this.list = []
+      console.log(res)
+      console.log(this.shareTableData)
+    },
     // 导航到指定层级的文件夹
     async navigateTo (index) {
       this.clearTableSelection()
@@ -455,14 +595,57 @@ export default {
       this.clearTableSelection()
     },
     // 下载文件
-    downloadFiles () {
-      console.log('下载文件')
+    async downloadFiles () {
+      for (const file of this.selectedRows) {
+        if (file.fileSize > 20 * 1024 * 1024) { // Check if file size is greater than 20MB
+          this.$message({
+            message: '文件大于20MB，请使用客户端下载',
+            type: 'warning',
+            duration: 2000
+          })
+          continue
+        }
+        try {
+          const response = await axios({
+            url: 'http://8.134.178.176:8080/file/download',
+            method: 'GET',
+            responseType: 'blob', // Important for downloading files
+            params: {
+              userFileId: file.userFileId
+            },
+            headers: {
+              Authorization: this.$store.state.usertoken
+            }
+          })
+          const blob = new Blob([response.data])
+          const link = document.createElement('a')
+          link.href = window.URL.createObjectURL(blob)
+          link.download = file.fileName
+          link.click()
+        } catch (error) {
+          this.$message({
+            message: '下载文件失败，请重试',
+            type: 'error',
+            duration: 2000
+          })
+        }
+      }
     },
-    // 分享文件
-    shareFiles () {
-      console.log('分享文件')
+    // 分享文件'
+    shareFiles (row) {
+      console.log(row.fileName, row.userFileId)
+      this.sharefileid = row.userFileId
+      this.sharefilename = row.fileName
+      this.isshare = true
+      console.log(this.isshare)
     },
-    // 移动文件
+    // 复选框分享文件
+    shareFile () {
+      console.log(this.selectedRows[0].fileName)
+      this.sharefileid = this.selectedRows[0].userFileId
+      this.sharefilename = this.selectedRows[0].fileName
+      this.isshare = true
+    }, // 移动文件
     moveFiles () {
       console.log('移动文件')
     },
@@ -503,6 +686,7 @@ export default {
       }
       this.selectedRows = []
       this.clearTableSelection()
+      this.allfile()
     },
     // 取消复选框 Liu Zijun
     clearTableSelection () {
@@ -624,6 +808,47 @@ export default {
           console.error('发生错误:', error.message)
           // alert('获取用户信息失败，请重试！')
         })
+    },
+    // 复制分享链接 LYX
+    copyShare () {
+      // 获取选中的分享记录
+      const link = this.selectedRows[0].link
+      // 将分享链接复制到剪贴板
+      try {
+        navigator.clipboard.writeText(link)
+        this.$message({
+          message: '分享链接已复制到剪贴板！',
+          type: 'success',
+          duration: 2000
+        })
+      } catch (error) {
+        this.$message({
+          message: '复制分享链接失败！',
+          type: 'error',
+          duration: 2000
+        })
+      }
+    },
+    // 删除分享记录 LYX
+    async deleteShare () {
+      const shareIds = this.selectedRows.map(row => row.shareId)
+      for (const id of shareIds) {
+        const res = await cancelShare(this.token, id + '')
+        if (res.data.code === 200) {
+          this.$message({
+            message: '分享记录删除成功！',
+            type: 'success',
+            duration: 2000
+          })
+        } else {
+          this.$message({
+            message: '分享记录删除失败！',
+            type: 'error',
+            duration: 2000
+          })
+        }
+      }
+      this.getShareHistory()
     }
   }
 }
@@ -632,6 +857,7 @@ export default {
 .file-cell {
   display: flex;
   align-items: center;
+  position: relative;
 }
 
 .file-icon {
@@ -671,6 +897,46 @@ export default {
 .dropdown-button:hover {
   background-color: #f5f5f5;
 }
+
+.file-cell:hover .hover-icons {
+  display: flex;
+}
+
+.hover-icons {
+  display: none;
+  position: absolute;
+  right: -12px;
+  gap: 10px;
+}
+
+.hover-icons img {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.cut-row {
+  background-color: darkblue;
+  color: white; /* Optional: Change text color for better contrast */
+}
+
+#avatar-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ccc;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  left: 0;
+  bottom: 0;
+  margin-left: 30px;
+  margin-top: 10px;
+}
+
+.highlight {
+  color: red;
+}
 </style>
 <style scoped>
 body {
@@ -705,7 +971,6 @@ body {
   /* justify-content: space-between; */
   height: 100vh;
   background: #ecedf3;
-
 }
 .area {
   height: 100%;
@@ -735,6 +1000,15 @@ body {
 #gap {
   width: 12px;
   background-color: #ecedf3;
+}
+
+el-menu, .el-menu {
+  border: 0;
+}
+
+el-menu-item {
+  width: 180px;
+  padding: 40px 0;
 }
 
 .menu-item-content {
@@ -773,5 +1047,28 @@ body {
   bottom: 0;
   margin-left: 30px;
   margin-top: 10px;
+}
+.highlight {
+  color: red;
+}
+.cut-row {
+  background-color: darkblue;
+  color: white; /* Optional: Change text color for better contrast */
+}
+#avatar-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ccc;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  left: 0;
+  bottom: 0;
+  margin-left: 30px;
+  margin-top: 10px;
+}
+.highlight {
+  color: red;
 }
 </style>
