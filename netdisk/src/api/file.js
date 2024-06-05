@@ -28,6 +28,21 @@ export const getFile = (Authorization, page, pageSize, pid) => {
   })
 }
 
+export const getshareFile = (Authorization, page, pageSize, link, pid) => {
+  return request.get('/file/share/list', {
+    headers: {
+      Authorization
+    },
+    params: {
+      // 写死先进行测试
+      page,
+      pageSize,
+      pid,
+      link
+    }
+  })
+}
+
 // 删除文件
 export const deleteFile = (Authorization, fileIds) => {
   return request.delete('/file/delete', {
@@ -73,6 +88,43 @@ export const getFileByPath = (Authorization, path) => {
       page: 1,
       pageSize: 10,
       status: 0
+    }
+  })
+}
+
+export const getShareFile = (Authorization, page, pageSize) => {
+  return request.get('/file/share/record/list', {
+    headers: {
+      Authorization
+    },
+    params: {
+      page,
+      pageSize,
+      status: 0
+    }
+  })
+}
+
+export const getDownloadFile = (Authorization, page, pageSize) => {
+  return request.get('/file/download/record/list', {
+    headers: {
+      Authorization
+    },
+    params: {
+      page,
+      pageSize,
+      status: 0
+    }
+  })
+}
+
+export const cancelShare = (Authorization, shareId) => {
+  return request.delete('/file/share/cancel', {
+    headers: {
+      Authorization
+    },
+    params: {
+      shareId
     }
   })
 }

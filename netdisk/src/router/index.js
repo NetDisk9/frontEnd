@@ -11,6 +11,9 @@ import managePage from '@/views/admin/admin.vue'
 import vippage from '@/views/vipPage.vue'
 import forgetPSW from '@/views/login/forgetPSW.vue' // LYX
 import filelist from '@/components/fileList.vue'
+import savePage from '@/views/savePage.vue'
+import save from '@/views/saveView.vue'
+import share from '@/components/ShareCom.vue'
 
 Vue.use(VueRouter)
 
@@ -39,6 +42,19 @@ const router = new VueRouter({
     {
       path: '/file',
       component: filelist
+    },
+    // {
+    //   path: '/savePage', // 动态参数 :surl
+    //   component: save
+    // },
+    {
+      path: '/share/:surl', // 动态参数 :surl
+      component: savePage
+    },
+    {
+      path: '/save/:surl',
+      name: 'save',
+      component: save
     },
     // 邮箱登陆路由配置
     {
@@ -76,9 +92,13 @@ const router = new VueRouter({
       // 忘记密码界面
       path: '/forget',
       component: forgetPSW
+    },
+    {
+      path: '/share',
+      component: share
     }
-
   ]
+
 })
 
 export default router

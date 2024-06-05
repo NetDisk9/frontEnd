@@ -4,13 +4,13 @@
 
     <div id="top-bar">
       <div class="avatar">
-    <div style="display: flex; justify-content: center; align-items: center;">
-      <div id="avatar-preview" :style="{backgroundImage: 'url(' + avatarPreviewUrl + ')'}"></div>
-      <router-link to="/homeview">
-        <el-button type="warning" round style="margin-left: 30px; margin-top: 10px;font-size: 16px;font-weight: 600; background: linear-gradient(to right, #fdd835, #fda085); color: brown; border: none;;">个人中心</el-button>
-      </router-link>
-    </div>
-  </div>
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <div id="avatar-preview" :style="{backgroundImage: 'url(' + avatarPreviewUrl + ')'}"></div>
+          <router-link to="/homeview">
+            <el-button type="warning" round style="margin-left: 30px; margin-top: 10px;font-size: 16px;font-weight: 600; background: linear-gradient(to right, #fdd835, #fda085); color: brown; border: none;;">个人中心</el-button>
+          </router-link>
+        </div>
+      </div>
     </div>
     <div id="divider"></div>
     <div id="content">
@@ -23,9 +23,13 @@
               style="width: 150px;"
               @open="handleOpen"
               @close="handleClose">
-              <el-menu-item index="1" style="font-size: 20px;">
+              <el-menu-item index="1" style="font-size: 20px;" @click="() => {this.showMume = 1; this.selectedRows = []; this.clearTableSelection()}">
                 <i class="el-icon-folder-opened" style="font-size: 24px;"></i>
                 <span style="font-size: 20px;">我的文件</span>
+              </el-menu-item>
+              <el-menu-item index="2" style="font-size: 20px;" @click="() => {this.showMume = 2; this.selectedRows = []; this.clearTableSelection()}">
+                <i class="el-icon-position" style="font-size: 24px;"></i>
+                <span style="font-size: 20px;">文件分享</span>
               </el-menu-item>
             </el-menu>
           </el-col>
@@ -33,8 +37,8 @@
       </div>
       <div id="gap"></div>
       <div id="area3">
-        <el-col :span="12">
-          <el-menu
+        <el-col :span="12" >
+          <el-menu v-if="showMume === 1"
             style="width:180px;"
             default-active="2"
             class="el-menu-vertical-demo"
@@ -85,126 +89,212 @@
               </el-menu-item-group>
             </el-submenu>
           </el-menu>
+          <el-menu v-if="showMume === 2"
+            style="width:180px;"
+            default-active="1"
+            class="el-menu-vertical-demo"
+            @open="handleOpen"
+            @close="handleClose">
+            <el-menu-item index="1" @click="getShareHistory">
+              <template slot="title">
+                <i class="el-icon-position"></i>
+                <span style="font-size: 20px;">分享记录</span>
+              </template>
+            </el-menu-item>
+            <el-menu-item index="2" @click="getDownloadHistory">
+              <template slot="title">
+                <i class="el-icon-download"></i>
+                <span style="font-size: 20px;">转存记录</span>
+              </template>
+            </el-menu-item>
+          </el-menu>
         </el-col>
       </div>
       <div id="gap"></div>
       <div id="area2" class="area">
         <div class="filelist" @contextmenu.prevent="showContextMenu">
           <div style="position: relative">
-          <el-breadcrumb separator-class="el-icon-arrow-right">
-            <el-breadcrumb-item>
-              <!-- 返回上一步 -->
-              <i class="el-icon-arrow-left" style="margin-right: 10px; margin-left: 30px " @click="goBack"></i>
-              <i class="el-icon-arrow-right"></i>
-              <!-- 添加这个javascript:void(0)才能使点击后不进行跳转执行内嵌的@click -->
-              <a href="javascript:void(0);" @click="allfile">全部文件</a>
-            </el-breadcrumb-item>
-            <el-breadcrumb-item v-for="(item, index) in list" :key="index">
-              <!-- 点击后可以拿到数组下标，删除下标之后的面包屑数组 -->
-              <a href="javascript:void(0);" @click="navigateTo(index)">{{ item.fileName }}</a>
-            </el-breadcrumb-item>
-          </el-breadcrumb>
+            <el-breadcrumb separator-class="el-icon-arrow-right">
+              <el-breadcrumb-item>
+                <!-- 返回上一步 -->
+                <i class="el-icon-arrow-left" style="margin-right: 10px; margin-left: 30px " @click="goBack"></i>
+                <i class="el-icon-arrow-right"></i>
+                <!-- 添加这个javascript:void(0)才能使点击后不进行跳转执行内嵌的@click -->
+                <a href="javascript:void(0);" @click="allfile">全部文件</a>
+              </el-breadcrumb-item>
+              <el-breadcrumb-item v-for="(item, index) in list" :key="index">
+                <!-- 点击后可以拿到数组下标，删除下标之后的面包屑数组 -->
+                <a href="javascript:void(0);" @click="navigateTo(index)">{{ item.fileName }}</a>
+              </el-breadcrumb-item>
+            </el-breadcrumb>
 
-    <!--    工具栏-->
-    <div style="margin: 20px 10% 20px 20px; display: flex; justify-content: right">
-      <el-button type="primary" size="small" icon="el-icon-download" @click="downloadFiles"
-                 :disabled="this.selectedRows.length === 0">下载
-      </el-button>
-      <el-button type="primary" size="small" icon="el-icon-share" @click="shareFiles"
-                 :disabled="this.selectedRows.length === 0">分享
-      </el-button>
-      <el-button type="primary" size="small" icon="el-icon-delete" @click="deleteFiles"
-                 :disabled="this.selectedRows.length === 0">删除
-      </el-button>
-      <el-button type="primary" size="small" icon="el-icon-edit" @click="showRenameDia"
-                 :disabled="this.selectedRows.length !== 1">重命名
-      </el-button>
-      <el-button type="primary" size="small" icon="el-icon-move" @click="moveFiles"
-                 :disabled="this.selectedRows.length === 0">移动
-      </el-button>
-      <el-button type="primary" size="small" icon="el-icon-plus" @click="showNewDia"
-                 :disabled="this.selectedRows.length !== 0">新建文件夹
-      </el-button>
-    </div>
+            <!--    工具栏-->
+            <div v-if="showMume === 1" style="margin: 20px 10% 20px 20px; display: flex; justify-content: right">
+              <el-button type="primary" size="small" icon="el-icon-download" @click="downloadFiles"
+                         :disabled="this.selectedRows.length === 0">下载
+              </el-button>
+              <el-button type="primary" size="small" icon="el-icon-share" @click="shareFiles"
+                         :disabled="this.selectedRows.length !== 1">分享
+              </el-button>
+              <el-button type="primary" size="small" icon="el-icon-delete" @click="deleteFiles"
+                         :disabled="this.selectedRows.length === 0">删除
+              </el-button>
+              <el-button type="primary" size="small" icon="el-icon-edit" @click="showRenameDia"
+                         :disabled="this.selectedRows.length !== 1">重命名
+              </el-button>
+              <el-button type="primary" size="small" icon="el-icon-move" @click="moveFiles"
+                         :disabled="this.selectedRows.length === 0">移动
+              </el-button>
+              <el-button type="primary" size="small" icon="el-icon-plus" @click="showNewDia"
+                         :disabled="this.selectedRows.length !== 0">新建文件夹
+              </el-button>
+            </div>
 
-    <MyModal :show="showRename" @close="showRename = false" style="z-index: 999">
-      <div style="font-size:20px; margin: 0 0 10px 10%">重命名文件夹</div>
-      <div style="display: flex; flex-direction: column;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 0 0 10%">
-          <div style="display: flex; width: auto">文件夹名：</div>
-          <el-input style="width: auto;" v-model="newName" placeholder="请输入新文件夹名"
-                    aria-required="true"></el-input>
-        </div>
-        <div style="display: flex; justify-content: center; margin: 20px 0 0 0">
-          <el-button @click="renameFile">确认</el-button>
-          <el-button @click="cancel">取消</el-button>
-        </div>
-      </div>
-    </MyModal>
+            <!--    工具栏-->
+            <div v-if="showMume === 2" style="margin: 20px 10% 20px 20px; display: flex; justify-content: right">
+              <el-button type="primary" size="small" icon="el-icon-copy-document" @click="copyShare"
+                         :disabled="this.selectedRows.length !== 1">复制链接
+              </el-button>
+              <el-button type="primary" size="small" icon="el-icon-delete" @click="deleteShare"
+                         :disabled="this.selectedRows.length === 0">删除分享
+              </el-button>
+            </div>
 
-    <MyModal :show="showNew" @close="showNew = false" style="z-index: 999">
-      <div style="font-size:20px; margin: 0 0 10px 10%">新建文件夹</div>
-      <div style="display: flex; flex-direction: column;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 0 0 10%">
-          <div style="display: flex; width: auto">文件夹名：</div>
-          <el-input style="width: 80%;" v-model="newName" placeholder="请输入文件夹名" aria-required="true"></el-input>
-        </div>
-        <div style="display: flex; justify-content: center; margin: 20px 0 0 0">
-          <el-button @click="createDir">确认</el-button>
-          <el-button @click="cancel">取消</el-button>
-        </div>
-      </div>
-    </MyModal>
-
-              <!-- 表格区域 -->
-           <el-table ref="table" v-if="isTableVisible" size="small" @selection-change="selectChange" :row-key="getKey"
-              :data="userTableData.slice((currentPage - 1) * pagesize, currentPage * pagesize)" style="width: 100%;">
-            <!-- 复选框 -->
-            <el-table-column align="center" type="selection" width="50" :reserve-selection="true"></el-table-column>
-            <!-- 文件名 -->
-            <el-table-column align="left" sortable prop="fileName" label="文件名" width="500">
-              <template v-slot="{ row }">
-                <div :class="{ 'cut-row': isCut(row) }"  class="file-cell">
-                  <img :src="getFileIcon(row.fileName)" class="file-icon" alt="file icon" />
-                  <a id="filetext" href="javascript:void(0);" @click="openfile(row)">{{ row.fileName }}</a>
+            <MyModal :show="showRename" @close="showRename = false" style="z-index: 999">
+              <div style="font-size:20px; margin: 0 0 10px 10%">重命名文件夹</div>
+              <div style="display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 0 0 10%">
+                  <div style="display: flex; width: auto; min-width: 80px">文件夹名：</div>
+                  <el-input style="width: 80%;" v-model="newName" placeholder="请输入新文件夹名"
+                            aria-required="true"></el-input>
                 </div>
-              </template>
-            </el-table-column>
-            <!-- 大小 -->
-            <el-table-column align="center" sortable prop="fileSize" label="大小" min-width="120"></el-table-column>
-            <!-- 修改时间 -->
-            <el-table-column align="center" sortable prop="updateTime" label="最近修改时间" min-width="120"></el-table-column>
-          </el-table>
+                <div style="display: flex; justify-content: center; margin: 20px 0 0 0">
+                  <el-button @click="renameFile">确认</el-button>
+                  <el-button @click="cancel">取消</el-button>
+                </div>
+              </div>
+            </MyModal>
 
-          <!-- 分页组件 -->
-          <el-pagination
-          style="margin-left: 10px; margin-top: 20px"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page="currentPage"
-            background
-            :page-sizes="[1, 3, 5, 10,15]"
-            :page-size="pagesize"
-            layout="total, sizes, prev, pager, next, jumper"
-            :total="userTableData.length">
-          </el-pagination>
+            <MyModal :show="showNew" @close="showNew = false" style="z-index: 999">
+              <div style="font-size:20px; margin: 0 0 10px 10%">新建文件夹</div>
+              <div style="display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 0 0 10%">
+                  <div style="display: flex; width: auto; min-width: 80px">文件夹名：</div>
+                  <el-input style="width: 80%;" v-model="newName" placeholder="请输入文件夹名" aria-required="true"></el-input>
+                </div>
+                <div style="display: flex; justify-content: center; margin: 20px 0 0 0">
+                  <el-button @click="createDir">确认</el-button>
+                  <el-button @click="cancel">取消</el-button>
+                </div>
+              </div>
+            </MyModal>
+
+            <!-- 表格区域 -->
+            <el-table ref="table" v-if="isTableVisible && showMume === 1" size="small" @selection-change="selectChange" :row-key="getKey"
+                      :data="userTableData.slice((currentPage - 1) * pagesize, currentPage * pagesize)" style="width: 100%;">
+              <!-- 复选框 -->
+              <el-table-column align="center" type="selection" width="50" :reserve-selection="true"></el-table-column>
+              <!-- 文件名 -->
+              <el-table-column align="left" sortable prop="fileName" label="文件名" width="500">
+                <template v-slot="{ row }">
+                  <div :class="{ 'cut-row': isCut(row) }"  class="file-cell">
+                    <img :src="getFileIcon(row.fileName)" class="file-icon" alt="file icon" />
+                    <a id="filetext" href="javascript:void(0);" @click="openfile(row)">{{ row.fileName }}</a>
+                    <div class="hover-icons">
+                      <img src="@/assets/share.png" @click="shareFiles(row)" />
+                      <img src="@/assets/download.png" @click="downloadFiles(row)" />
+                      <el-dropdown @command="handleCommand">
+                        <img src="@/assets/more.png" @click="$event.stopPropagation()" @click.native="showDropdown(row)" />
+                        <el-dropdown-menu slot="dropdown">
+                        <button class="dropdown-button" @click="copySelected">Copy</button>
+                        <button class="dropdown-button" @click="cutSelected">Cut</button>
+                        <button class="dropdown-button" @click="pasteClipboard">Paste</button>
+                        </el-dropdown-menu>
+                      </el-dropdown>                    </div>
+                  </div>
+                </template>
+              </el-table-column>
+              <!-- 大小 -->
+              <el-table-column align="center" sortable prop="fileSize" label="大小" min-width="120"></el-table-column>
+              <!-- 修改时间 -->
+              <el-table-column align="center" sortable prop="updateTime" label="最近修改时间" min-width="120"></el-table-column>
+            </el-table>
+
+            <el-table ref="table" v-if="isTableVisible && showMume === 2" size="small" @selection-change="selectChange" :row-key="getKey"
+                      :data="shareTableData.slice((currentPage - 1) * pagesize, currentPage * pagesize)" style="width: 100%;">
+              <!-- 复选框 -->
+              <el-table-column align="center" type="selection" width="50" :reserve-selection="true"></el-table-column>
+              <!-- 文件名 -->
+              <el-table-column align="left" sortable prop="fileName" label="文件名" width="500">
+                <template v-slot="{ row }">
+                  <div :class="{ 'cut-row': isCut(row) }"  class="file-cell">
+                    <img :src="getFileIcon(row.fileName)" class="file-icon" alt="file icon" />
+                    <a id="filetext">{{ row.fileName }}</a>
+                    <div class="hover-icons">
+                      <img src="@/assets/share.png" @click="shareFile(row)" />
+                      <img src="@/assets/download.png" @click="downloadFiles(row)" />
+                      <el-dropdown @command="handleCommand">
+                        <img src="@/assets/more.png" @click="$event.stopPropagation()" @click.native="showDropdown(row)" />
+                        <el-dropdown-menu slot="dropdown">
+                        <button class="dropdown-button" @click="copySelected">Copy</button>
+                        <button class="dropdown-button" @click="cutSelected">Cut</button>
+                        <button class="dropdown-button" @click="pasteClipboard">Paste</button>
+                        </el-dropdown-menu>
+                      </el-dropdown>
+                    </div>
+                  </div>
+                </template>
+              </el-table-column>
+              <!-- 分享时间 -->
+              <el-table-column align="center" sortable prop="begTime" label="分享时间" min-width="120"></el-table-column>
+              <!-- 状态 -->
+              <el-table-column align="center" sortable prop="available" label="状态" min-width="120">
+                <template v-slot="{ row }">
+                  <div :class="{ highlight: row.status === 1 }">{{ row.available }}</div>
+                </template>
+              </el-table-column>
+              <!-- 浏览次数 -->
+              <el-table-column align="center" sortable prop="count" label="浏览次数" min-width="120"></el-table-column>
+            </el-table>
+
+            <!-- 分页组件 -->
+            <el-pagination
+              style="margin-left: 10px; margin-top: 20px"
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+              :current-page="currentPage"
+              background
+              :page-sizes="[1, 3, 5, 10,15]"
+              :page-size="pagesize"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="userTableData.length">
+            </el-pagination>
+          </div>
         </div>
       </div>
+      <!-- Context menu -->
+      <el-dropdown ref="menu" :hide-on-click="false" :style="contextMenuStyle">
+        <span class="el-dropdown-link" style="display: none;"></span>
+        <el-dropdown-menu slot="dropdown">
+          <button class="dropdown-button" @click="copySelected">Copy</button>
+          <button class="dropdown-button" @click="cutSelected">Cut</button>
+          <button class="dropdown-button" @click="pasteClipboard">Paste</button>
+        </el-dropdown-menu>
+      </el-dropdown>
     </div>
-    <!-- Context menu -->
-    <el-dropdown ref="menu" :hide-on-click="false" :style="contextMenuStyle">
-  <span class="el-dropdown-link" style="display: none;"></span>
-  <el-dropdown-menu slot="dropdown">
-    <button class="dropdown-button" @click="copySelected">Copy</button>
-    <button class="dropdown-button" @click="cutSelected">Cut</button>
-    <button class="dropdown-button" @click="pasteClipboard">Paste</button>
-  </el-dropdown-menu>
-</el-dropdown>
   </div>
-</div>
 </template>
 <script>
-import { createDir, deleteFile, getFile, renameFile, forCates } from '@/api/file'
+import {
+  createDir,
+  deleteFile,
+  getFile,
+  renameFile,
+  forCates,
+  getShareFile,
+  getDownloadFile,
+  cancelShare
+} from '@/api/file'
 import MyModal from '@/components/myModal.vue'
 import axios from 'axios'
 export default {
@@ -215,6 +305,8 @@ export default {
       list: [],
       // 渲染文件列表数组
       userTableData: [],
+      // 渲染分享列表数组
+      shareTableData: [],
       // 分页组件初始页面
       currentPage: 1,
       // 每一页的总条数 这里我默认设置成10条每一个页面
@@ -241,11 +333,13 @@ export default {
       },
       // New data property to track the clicked row
       clickedRow: null,
-      cutFiles: [] // Array to store IDs of cut files
+      cutFiles: [], // Array to store IDs of cut files
+      showMume: 1
     }
   },
   async created () {
     await this.allfile()
+    await this.getShareHistory()
     this.getUserInfo()
   },
   methods: {
@@ -261,6 +355,8 @@ export default {
     },
     // 根据文件名获取图标路径
     getFileIcon (fileName) {
+      // 文件图标
+      if (fileName.indexOf('.') === -1) { return require('@/assets/file.png') }
       const extension = fileName.split('.').pop().toLowerCase()
       switch (extension) {
         case 'txt':
@@ -286,9 +382,8 @@ export default {
           return require('@/assets/ppt.png')
         case 'zip':
           return require('@/assets/zip.png')
-          // 文件夹没有后缀名
         default:
-          return require('@/assets/file.png')
+          return require('@/assets/default.png')
       }
     },
     async openfile (row) {
@@ -366,10 +461,10 @@ export default {
       this.isLoading = true
       try {
         if (this.list.length === 0) {
-        // 当前已在根目录
+          // 当前已在根目录
           await this.allfile()
         } else {
-        // 移除最后一个面包屑导航项
+          // 移除最后一个面包屑导航项
           this.list.pop()
           // 获取上一级目录的文件，如果数组中还有上一级文件就获取上一级文件的id，然后进行渲染，如果去除掉最后一层后渲染函数没有长度了就直接渲染全部文件
           const parentId = this.list.length > 0 ? this.list[this.list.length - 1].userFileId : null
@@ -386,6 +481,45 @@ export default {
         // 执行完成后设置为false可以再次点击
         this.isLoading = false
       }
+    },
+    // 获取分享记录
+    async getShareHistory () {
+      const res = await getShareFile(this.token, 1, 100)
+      this.shareTableData = res.data.data.list
+      this.list = []
+      console.log(res)
+      for (let i = 0; i < this.shareTableData.length; i++) {
+        this.shareTableData[i].count += '次'
+        this.shareTableData[i].status = 0
+
+        let begin, end
+        // eslint-disable-next-line prefer-const
+        begin = new Date(this.shareTableData[i].begTime)
+        // eslint-disable-next-line prefer-const
+        end = new Date(this.shareTableData[i].endTime)
+
+        if (end - begin < 0) {
+          this.shareTableData[i].available = '已失效'
+        }
+
+        const gapTime = (end - begin) / 1000
+        if (gapTime > 60 * 60 * 24) {
+          // 转化为天数
+          this.shareTableData[i].available = Math.floor(gapTime / (60 * 60 * 24)) + '天后失效'
+        } else {
+          // 转化为小时数
+          this.shareTableData[i].available = Math.floor(gapTime / (60 * 60)) + '小时后失效'
+          this.shareTableData[i].status = 1
+        }
+      }
+    },
+    // 获取转存记录
+    async getDownloadHistory () {
+      const res = await getDownloadFile(this.token, 1, 100)
+      this.shareTableData = res.data.data.list
+      this.list = []
+      console.log(res)
+      console.log(this.shareTableData)
     },
     // 导航到指定层级的文件夹
     async navigateTo (index) {
@@ -454,12 +588,48 @@ export default {
       this.clearTableSelection()
     },
     // 下载文件
-    downloadFiles () {
-      console.log('下载文件')
+    async downloadFiles () {
+      for (const file of this.selectedRows) {
+        if (file.fileSize > 20 * 1024 * 1024) { // Check if file size is greater than 20MB
+          this.$message({
+            message: '文件大于20MB，请使用客户端下载',
+            type: 'warning',
+            duration: 2000
+          })
+          continue
+        }
+        try {
+          const response = await axios({
+            url: 'http://8.134.178.176:8080/file/download',
+            method: 'GET',
+            responseType: 'blob', // Important for downloading files
+            params: {
+              userFileId: file.userFileId
+            },
+            headers: {
+              Authorization: this.$store.state.usertoken
+            }
+          })
+          const blob = new Blob([response.data])
+          const link = document.createElement('a')
+          link.href = window.URL.createObjectURL(blob)
+          link.download = file.fileName
+          link.click()
+        } catch (error) {
+          this.$message({
+            message: '下载文件失败，请重试',
+            type: 'error',
+            duration: 2000
+          })
+        }
+      }
     },
-    // 分享文件
-    shareFiles () {
-      console.log('分享文件')
+    // 分享文件'
+    shareFiles (row = 'null') {
+      if (row === 'null') {
+        row = this.selectedRows[0]
+      }
+      console.log(row)
     },
     // 移动文件
     moveFiles () {
@@ -492,10 +662,7 @@ export default {
     // 删除文件 LYX
     async deleteFiles () {
       const fileIds = this.selectedRows.map(row => row.userFileId)
-      this.selectedRows = []
-      this.clearTableSelection()
-      console.log(fileIds)
-      const res = await deleteFile(this.token, fileIds + '1')
+      const res = await deleteFile(this.token, fileIds + '')
       console.log(res)
       if (res.data.code === 200) {
         // 删除成功后重新获取文件列表
@@ -503,6 +670,9 @@ export default {
         console.log(this.list[this.list.length - 1].fileName)
         this.userTableData = res.data.data.list
       }
+      this.selectedRows = []
+      this.clearTableSelection()
+      this.allfile()
     },
     // 取消复选框 Liu Zijun
     clearTableSelection () {
@@ -546,11 +716,17 @@ export default {
       //   console.error('Please select exactly one file or folder to paste into.')
       //   return
       // }
-      const selectedFile = this.selectedRows[0]
-      console.log('isDir:', selectedFile.isDir)
-      // const pid = selectedFile.pid
-      const pid = selectedFile.isDir ? selectedFile.userFileId : selectedFile.pid
-      console.log('isDir:', selectedFile.isDir)
+      // const selectedFile = this.selectedRows[0]
+      // console.log('isDir:', selectedFile.isDir)
+      // // const pid = selectedFile.pid
+      let pid
+      if (this.selectedRows.length !== 0) {
+        pid = this.selectedRows[0].isDir ? this.selectedRows[0].userFileId : this.selectedRows[0].pid
+      } else {
+        pid = this.list.length > 0 ? this.list[this.list.length - 1].userFileId : null
+      }
+      console.log('pid' + pid)
+      // console.log('isDir:', selectedFile.isDir)
       this.clearTableSelection()
       const requestData = {
         userFileId: this.clipboard.files,
@@ -573,7 +749,7 @@ export default {
         const res = await deleteFile(this.token, fileIds + '')
         console.log(res)
         if (res.data.code === 200) {
-        // 删除成功后重新获取文件列表
+          // 删除成功后重新获取文件列表
           const res = await getFile(this.token, 1, 100, this.list[this.list.length - 1].userFileId)
           console.log(this.list[this.list.length - 1].fileName)
           this.userTableData = res.data.data.list
@@ -618,6 +794,47 @@ export default {
           console.error('发生错误:', error.message)
           // alert('获取用户信息失败，请重试！')
         })
+    },
+    // 复制分享链接 LYX
+    copyShare () {
+      // 获取选中的分享记录
+      const link = this.selectedRows[0].link
+      // 将分享链接复制到剪贴板
+      try {
+        navigator.clipboard.writeText(link)
+        this.$message({
+          message: '分享链接已复制到剪贴板！',
+          type: 'success',
+          duration: 2000
+        })
+      } catch (error) {
+        this.$message({
+          message: '复制分享链接失败！',
+          type: 'error',
+          duration: 2000
+        })
+      }
+    },
+    // 删除分享记录 LYX
+    async deleteShare () {
+      const shareIds = this.selectedRows.map(row => row.shareId)
+      for (const id of shareIds) {
+        const res = await cancelShare(this.token, id + '')
+        if (res.data.code === 200) {
+          this.$message({
+            message: '分享记录删除成功！',
+            type: 'success',
+            duration: 2000
+          })
+        } else {
+          this.$message({
+            message: '分享记录删除失败！',
+            type: 'error',
+            duration: 2000
+          })
+        }
+      }
+      this.getShareHistory()
     }
   }
 }
@@ -626,6 +843,7 @@ export default {
 .file-cell {
   display: flex;
   align-items: center;
+  position: relative;
 }
 
 .file-icon {
@@ -665,6 +883,46 @@ export default {
 .dropdown-button:hover {
   background-color: #f5f5f5;
 }
+
+.file-cell:hover .hover-icons {
+  display: flex;
+}
+
+.hover-icons {
+  display: none;
+  position: absolute;
+  right: -12px;
+  gap: 10px;
+}
+
+.hover-icons img {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.cut-row {
+  background-color: darkblue;
+  color: white; /* Optional: Change text color for better contrast */
+}
+
+#avatar-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ccc;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  left: 0;
+  bottom: 0;
+  margin-left: 30px;
+  margin-top: 10px;
+}
+
+.highlight {
+  color: red;
+}
 </style>
 <style scoped>
 body {
@@ -699,7 +957,6 @@ body {
   /* justify-content: space-between; */
   height: 100vh;
   background: #ecedf3;
-
 }
 .area {
   height: 100%;
@@ -729,6 +986,15 @@ body {
 #gap {
   width: 12px;
   background-color: #ecedf3;
+}
+
+el-menu, .el-menu {
+  border: 0;
+}
+
+el-menu-item {
+  width: 180px;
+  padding: 40px 0;
 }
 
 .menu-item-content {
@@ -767,5 +1033,28 @@ body {
   bottom: 0;
   margin-left: 30px;
   margin-top: 10px;
+}
+.highlight {
+  color: red;
+}
+.cut-row {
+  background-color: darkblue;
+  color: white; /* Optional: Change text color for better contrast */
+}
+#avatar-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ccc;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  left: 0;
+  bottom: 0;
+  margin-left: 30px;
+  margin-top: 10px;
+}
+.highlight {
+  color: red;
 }
 </style>
