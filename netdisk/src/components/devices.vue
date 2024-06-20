@@ -28,9 +28,9 @@ export default {
     }
   },
   methods: {
-    // 从8.134.178.176:8080/user/device获取数据
+    // 从47.97.32.241:8080/user/device获取数据
     getDevices () {
-      fetch('http://8.134.178.176:8080/user/device', {
+      fetch('http://47.97.32.241:8080/user/device', {
         method: 'GET',
         headers: {
           Authorization: this.$store.state.usertoken

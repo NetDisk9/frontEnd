@@ -33,7 +33,7 @@ export default {
   },
   methods: {
     fetchLoginMethods () {
-      fetch('http://8.134.178.176:8080/user/login/method', {
+      fetch('http://47.97.32.241:8080/user/login/method', {
         method: 'GET',
         headers: {
           Authorization: this.$store.state.usertoken
@@ -85,7 +85,7 @@ export default {
       }
 
       // 发送请求
-      fetch('http://8.134.178.176:8080/user/login/method?type=' + this.type, requestOptions)
+      fetch('http://47.97.32.241:8080/user/login/method?type=' + this.type, requestOptions)
         .then(response => {
           if (response.ok) {
             return response.json()

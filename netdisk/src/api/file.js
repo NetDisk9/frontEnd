@@ -43,6 +43,21 @@ export const getshareFile = (Authorization, page, pageSize, link, pid) => {
   })
 }
 
+export const getCollection = (Authorization, page, pageSize, link, pid) => {
+  return request.get('/file/collect/list', {
+    headers: {
+      Authorization
+    },
+    params: {
+      // 写死先进行测试
+      page,
+      pageSize,
+      pid,
+      link
+    }
+  })
+}
+
 // 删除文件
 export const deleteFile = (Authorization, fileIds) => {
   return request.delete('/file/delete', {

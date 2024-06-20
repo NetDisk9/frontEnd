@@ -4,7 +4,7 @@ import axios from 'axios'
 // 好处：不会污染原始的 axios 实例
 const instance = axios.create({
   // 后端接口基地址
-  baseURL: 'http://8.134.178.176:8080',
+  baseURL: 'http://47.97.32.241:8080',
   //   设置最慢响应时间
   timeout: 5000
 })
