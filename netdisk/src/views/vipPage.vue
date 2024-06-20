@@ -165,6 +165,7 @@ export default {
             type: 'success',
             duration: 2000
           })
+          this.endTime = data.data
           console.log('VIP充值成功，VIP结束时间：', data.data)
         // 在这里可以更新页面上的VIP结束时间显示
         } else {

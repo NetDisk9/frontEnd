@@ -95,7 +95,7 @@
             class="el-menu-vertical-demo"
             @open="handleOpen"
             @close="handleClose">
-            <el-menu-item index="2-1" @click="() => {this.showMume = 2;  this.getShareHistory()}">
+            <el-menu-item index="2-1" @click="getShare">
               <template slot="title">
                 <i class="el-icon-position"></i>
                 <span style="font-size: 20px;">分享记录</span>
@@ -506,17 +506,24 @@ export default {
   },
   // lby改
   async created () {
-    // this.id = this.$route.params.surl;
-    // this.showMume = this.id ? this.$route.params.showMume : 1;
-    // console.log(this.id)
+    this.id = this.$route.params.surl
+    this.showMume = this.id ? this.$route.params.showMume : 1
+    console.log(this.id)
     this.getUserName()
-    this.showMume = 1
+    // this.showMume = 1
     console.log(this.showMume)
     await this.allfile()
     await this.getShareHistory()
     this.getUserInfo()
+    if (this.showMume === 6) {
+      this.getCollectInfo()
+    }
   },
   methods: {
+    getShare () {
+      this.showMume = 2
+      this.getShareHistory()
+    },
     test () {
       console.log(this.showMume)
     },
@@ -584,22 +591,22 @@ export default {
         })
       }
     },
-    async createAutoSaveFolders () {
-      try {
-        // Create root folder if it doesn't exist
-        const rootFolderResponse = await createDir(this.token, null, '来自：收集文件')
-        const rootFolderId = rootFolderResponse.data.data.userFileId
+    // async createAutoSaveFolders () {
+    //   try {
+    //     // Create root folder if it doesn't exist
+    //     const rootFolderResponse = await createDir(this.token, null, '来自：收集文件')
+    //     const rootFolderId = rootFolderResponse.data.data.userFileId
 
-        // Create subfolder with the title name
-        await createDir(this.token, rootFolderId, this.form.title)
-      } catch (error) {
-        this.$message({
-          message: '自动转存文件夹创建失败',
-          type: 'error',
-          duration: 2000
-        })
-      }
-    },
+    //     // Create subfolder with the title name
+    //     await createDir(this.token, rootFolderId, this.form.title)
+    //   } catch (error) {
+    //     this.$message({
+    //       message: '自动转存文件夹创建失败',
+    //       type: 'error',
+    //       duration: 2000
+    //     })
+    //   }
+    // },
     getUserName () {
       fetch('http://47.97.32.241:8080/user/info', {
         method: 'GET',
@@ -811,7 +818,19 @@ export default {
     },
     // 获取分享记录
     async getShareHistory () {
+      alert(111)
       const res = await getShareFile(this.token, 1, 100)
+        .catch((err) => {
+          this.$message.error(err.message)
+        })
+      console.log(res)
+      if (!res) {
+        return
+      }
+      if (res.data.code !== 200) {
+        // this.$message.error(res.data.message)
+        return
+      }
       this.shareTableData = res.data.data.list
       this.list = []
       console.log(res)
@@ -1036,8 +1055,7 @@ export default {
       console.log(res)
       if (res.data.code === 200) {
         // 删除成功后重新获取文件列表
-        const res = await getFile(this.token, 1, 100, this.list[this.list.length - 1].userFileId)
-        console.log(this.list[this.list.length - 1].fileName)
+        const res = await getFile(this.token, 1, 100, this.list.length === 0 ? null : this.list[this.list.length - 1].userFileId)
         this.userTableData = res.data.data.list
       }
       this.selectedRows = []

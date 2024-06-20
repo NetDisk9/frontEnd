@@ -16,7 +16,8 @@ export default {
 </script>
 
 <style>
-body{
+#app, html, body{
+  overflow: hidden;
   width: 100%;
   height: 100%;
   margin: 0;

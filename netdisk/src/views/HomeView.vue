@@ -22,13 +22,16 @@
       </div>
       <div id="gap"></div>
       <div id="area2" class="area">
-        <div v-if="show===1" style="overflow: auto">
-          <EnterHistory/>
+        <div v-if="show === 0">
+        <el-button type="primary" @click="() => {this.$router.push('/file')}" style="margin-top: 200px">我的文件</el-button>
         </div>
         <div v-if="show===2" style="overflow: auto">
-          <Devices/>
+          <EnterHistory/>
         </div>
         <div v-if="show===3" style="overflow: auto">
+          <Devices/>
+        </div>
+        <div v-if="show===1" style="overflow: auto">
           <changeCode/>
         </div>
         <div v-if="show===4" style="overflow: auto">
@@ -40,7 +43,7 @@
       </div>
       <div id="gap"></div>
       <div id="area3">
-        <div style="display: flex; justify-content: center; align-items: center; margin: 20px 5px 20px 20px">
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 20px 5px 20px 20px">
          <!--          LYX-->
          <div style="display: flex; justify-content: center; align-items: center;">
             <div id="avatar-preview" :style="{backgroundImage: 'url(' + avatarPreviewUrl + ')'}" @click="triggerAvatarChange"/>
@@ -127,7 +130,7 @@ export default {
             console.log(userInfo)
             document.getElementById('avatar-preview').style.backgroundImage = `url(${userInfo.avatar})`
             document.getElementById('nickname').innerText = userInfo.username
-            document.getElementById('user-id').innerText = `User ID: ${userInfo.id}`
+            document.getElementById('user-id').innerText = `User ID: ${userInfo.userId}`
           } else {
             console.error(data.code)
             console.error('获取用户信息失败或者响应不符合预期')
@@ -248,7 +251,7 @@ body {
 /*LYX*/
 #area1 {
   min-width: 180px;
-  width: 180px;
+  width: 230px;
   background-color: white;
   border-radius: 5px;
 }
@@ -259,7 +262,7 @@ body {
   border-radius: 5px;
 }
 #area3 {
-  width: 200px;
+  width: 250px;
   min-width: 160px;
   background-color: white;
   border-radius: 5px;

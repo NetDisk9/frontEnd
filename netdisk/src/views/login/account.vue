@@ -195,7 +195,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-            this.$router.push('/homeview')
+            this.$router.push('/file') // 最后一次迭代路由
           } else {
             this.$message({
               message: res.data.message,
