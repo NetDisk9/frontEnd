@@ -29,7 +29,7 @@
           </el-table>
           <div class="signature-section" style="margin-top: 20px;">
             <span class="signature-label">署名：</span>
-            <el-input class="short-input" v-model="userSign" placeholder="署名：" disabled></el-input>
+            <el-input class="short-input" v-model="userSign" placeholder="请输入署名"></el-input>
           </div>
         </div>
         <span slot="footer" class="dialog-footer">
@@ -56,7 +56,7 @@ export default {
   },
   data () {
     return {
-      userSign: '121*****129'
+      userSign: 'lmy'
     }
   },
   methods: {
@@ -80,13 +80,12 @@ export default {
         return
       }
 
-      // const link = 'i4f14sulguazk5z9scqz'
       let successCount = 0
       let errorCount = 0
 
       for (let i = 0; i < this.selectedFiles.length; i++) {
         try {
-          const res = await sendfile(this.selectedFiles[i].userFileId, 'lm', this.$route.params.surl, this.$store.state.usertoken)
+          const res = await sendfile(this.selectedFiles[i].userFileId, this.userSign, this.$route.params.surl, this.$store.state.usertoken)
           if (res.data.code === 200) {
             successCount++
           } else {
@@ -113,6 +112,7 @@ export default {
           type: 'success',
           duration: 2000
         })
+        this.$router.push('/file')
       }
 
       if (errorCount === 0) {

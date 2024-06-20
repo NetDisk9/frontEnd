@@ -247,7 +247,7 @@ export default {
     },
     getshareMessage () {
       console.log('已发送请求')
-      fetch('http://8.134.178.176:8080/file/share/info?link=' + this.$route.params.surl, {
+      fetch('http://47.97.32.241:8080/file/share/info?link=' + this.$route.params.surl, {
         method: 'GET',
         headers: {
           Authorization: this.$store.state.usertoken
@@ -482,7 +482,7 @@ export default {
         userFileId: this.clipboard.files,
         pid: pid
       }
-      axios.post('http://8.134.178.176:8080/file/copy?mode=1', requestData, {
+      axios.post('http://47.97.32.241:8080/file/copy?mode=1', requestData, {
         headers: { Authorization: this.$store.state.usertoken }
       })
         .then(response => {
@@ -521,7 +521,7 @@ export default {
         link: this.$route.params.surl,
         userFileIds: this.selectedFileIds
       }
-      fetch('http://8.134.178.176:8080/file/transfer', {
+      fetch('http://47.97.32.241:8080/file/transfer', {
         method: 'POST',
         headers: {
           Authorization: this.$store.state.usertoken,

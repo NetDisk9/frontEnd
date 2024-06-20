@@ -55,7 +55,7 @@ export default {
     },
     getshareMessage () {
       console.log('已发送请求')
-      fetch('http://8.134.178.176:8080/file/share/info?link=' + this.$route.params.surl, {
+      fetch('http://47.97.32.241:8080/file/share/info?link=' + this.$route.params.surl, {
         method: 'GET',
         headers: {
           Authorization: this.$store.state.usertoken
@@ -102,7 +102,7 @@ export default {
         })
     },
     gosubmit () {
-      const url = `http://8.134.178.176:8080/file/share/code/check?link=${this.$route.params.surl}&code=${this.codeInput}`
+      const url = `http://47.97.32.241:8080/file/share/code/check?link=${this.$route.params.surl}&code=${this.codeInput}`
       console.log(this.codeInput)
       fetch(url, {
         method: 'GET',

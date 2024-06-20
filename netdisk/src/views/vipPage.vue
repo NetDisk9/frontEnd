@@ -119,7 +119,7 @@ export default {
   methods: {
     async fetchUserInfo () {
       try {
-        const response = await fetch('http://8.134.178.176:8080/user/info', {
+        const response = await fetch('http://47.97.32.241:8080/user/info', {
           method: 'GET',
           headers: {
             Authorization: this.$store.state.usertoken
@@ -143,7 +143,7 @@ export default {
 
     async rechargeVIP (userId, money, duration) {
       try {
-        const response = await fetch('http://8.134.178.176:8080/user/vip', {
+        const response = await fetch('http://47.97.32.241:8080/user/vip', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

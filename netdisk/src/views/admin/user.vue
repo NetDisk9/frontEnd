@@ -286,7 +286,7 @@ export default {
         const { username, password, roleId } = this.newUser
 
         // 构建请求的 URL，将 username、password 和 roleId 都放置在路径中
-        const url = `http://8.134.178.176:8080/admin/add/user?username=${username}&password=${password}&roleId=${roleId}`
+        const url = `http://47.97.32.241:8080/admin/add/user?username=${username}&password=${password}&roleId=${roleId}`
 
         const response = await axios.post(
           url,
@@ -352,7 +352,7 @@ export default {
         const { page, pageSize } = this.formInline
 
         // 构建请求的 URL，将 page 和 pageSize 作为查询参数
-        const url = `http://8.134.178.176:8080/admin/list?page=${page}&pageSize=${pageSize}`
+        const url = `http://47.97.32.241:8080/admin/list?page=${page}&pageSize=${pageSize}`
 
         // 准备请求体，只包含除了 page 和 pageSize 之外的搜索条件
         const { username, email } = this.formInline
@@ -464,7 +464,7 @@ export default {
       }
 
       // 调用用户信息 API 获取基本用户数据
-      fetch('http://8.134.178.176:8080/admin/list?page=1&pageSize=100', {
+      fetch('http://47.97.32.241:8080/admin/list?page=1&pageSize=100', {
         method: 'POST',
         headers: {
           Authorization: this.$store.state.usertoken,
@@ -501,7 +501,7 @@ export default {
 
     // 更新用户身份（实现）
     changeRole (userId, roleId) {
-      fetch(`http://8.134.178.176:8080/admin/role/update?userId=${userId}&roleId=${roleId}`, {
+      fetch(`http://47.97.32.241:8080/admin/role/update?userId=${userId}&roleId=${roleId}`, {
         method: 'PUT',
         headers: {
           // 从vuex获取token
@@ -547,7 +547,7 @@ export default {
         requestBody.username = userName
       }
 
-      fetch('http://8.134.178.176:8080/admin/info/update', {
+      fetch('http://47.97.32.241:8080/admin/info/update', {
         method: 'PUT',
         headers: {
           Authorization: this.$store.state.usertoken,
@@ -579,7 +579,7 @@ export default {
 
     // 重置密码接口封装
     changepassword (userId) {
-      fetch(`http://8.134.178.176:8080/admin/update?userId=${userId}`, {
+      fetch(`http://47.97.32.241:8080/admin/update?userId=${userId}`, {
         method: 'PUT',
         headers: {
           // 从vuex获取token
@@ -619,7 +619,7 @@ export default {
     },
     // 请求后端生成excel文件
     sendForExcel () {
-      fetch(`http://8.134.178.176:8080/admin/add/all/user?count=${this.createUserNum}&roleId=${this.selectedRoleId}`, {
+      fetch(`http://47.97.32.241:8080/admin/add/all/user?count=${this.createUserNum}&roleId=${this.selectedRoleId}`, {
         method: 'POST',
         headers: {
           Authorization: this.$store.state.usertoken,

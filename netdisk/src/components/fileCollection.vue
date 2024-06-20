@@ -86,7 +86,7 @@
               </el-pagination>
               <el-button @click="select" class="list" style="width: 100px;" type="primary" round>确认</el-button>
 
-              <el-button class="list" style="width: 100px;" round>取消</el-button>
+              <el-button @click="$router.push('/file')" class="list" style="width: 100px;" round>取消</el-button>
             </div>
           </div>
         </div>

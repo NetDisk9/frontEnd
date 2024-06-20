@@ -108,7 +108,7 @@ export default {
     },
     getUserInfo () {
       // console.log("sdffdf");
-      fetch('http://8.134.178.176:8080/user/info', {
+      fetch('http://47.97.32.241:8080/user/info', {
         method: 'GET',
         headers: {
           Authorization: this.$store.state.usertoken
@@ -171,7 +171,7 @@ export default {
       const requestBody = {
         nickname: newNickname
       }
-      fetch('http://8.134.178.176:8080/user/update', {
+      fetch('http://47.97.32.241:8080/user/update', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
