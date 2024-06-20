@@ -18,7 +18,7 @@
         <div style="padding-top: 10px;">
           <el-col :span="3">
             <el-menu
-              default-active="1"
+              default-active="activeIndex"
               class="el-menu-vertical-demo"
               style="width: 150px;"
               @open="handleOpen"
@@ -40,7 +40,7 @@
         <el-col :span="12" >
           <el-menu v-if="showMume === 1"
             style="width:180px;"
-            default-active="2"
+            default-active="activeIndex"
             class="el-menu-vertical-demo"
             @open="handleOpen"
             @close="handleClose">
@@ -89,22 +89,22 @@
               </el-menu-item-group>
             </el-submenu>
           </el-menu>
-          <el-menu v-if="showMume === 2"
+          <el-menu v-if="showMume === 2 ||showMume === 3 || showMume === 5 || showMume === 6 || showMume ===7"
             style="width:180px;"
-            default-active="1"
+            default-active="activeIndex"
             class="el-menu-vertical-demo"
             @open="handleOpen"
             @close="handleClose">
-            <el-menu-item index="1" @click="getShareHistory">
+            <el-menu-item index="2-1" @click="() => {this.showMume = 2;  this.getShareHistory()}">
               <template slot="title">
                 <i class="el-icon-position"></i>
                 <span style="font-size: 20px;">分享记录</span>
               </template>
             </el-menu-item>
-            <el-menu-item index="2" @click="getDownloadHistory">
+            <el-menu-item index="2-2" @click="() => {this.showMume = 3; this.selectedRows = []; this.clearTableSelection(); this.getCollectionfiles()}">
               <template slot="title">
                 <i class="el-icon-download"></i>
-                <span style="font-size: 20px;">转存记录</span>
+                <span style="font-size: 20px;">收集文件</span>
               </template>
             </el-menu-item>
           </el-menu>
@@ -112,15 +112,15 @@
       </div>
       <div id="gap"></div>
       <div id="area2" class="area">
-        <div class="filelist" @contextmenu.prevent="showContextMenu">
+        <div class="filelist" @contextmenu.prevent="showContextMenu" v-if="showMume !== 6">
           <div style="position: relative">
             <el-breadcrumb separator-class="el-icon-arrow-right">
-              <el-breadcrumb-item>
+              <el-breadcrumb-item v-if="showMume !== 5 && showMume !== 6 && showMune !== 7">
                 <!-- 返回上一步 -->
                 <i class="el-icon-arrow-left" style="margin-right: 10px; margin-left: 30px " @click="goBack"></i>
                 <i class="el-icon-arrow-right"></i>
                 <!-- 添加这个javascript:void(0)才能使点击后不进行跳转执行内嵌的@click -->
-                <a href="javascript:void(0);" @click="allfile">全部文件</a>
+                <a href="javascript:void(0);" v-if="showMume !== 5" @click="allfile">全部文件</a>
               </el-breadcrumb-item>
               <el-breadcrumb-item v-for="(item, index) in list" :key="index">
                 <!-- 点击后可以拿到数组下标，删除下标之后的面包屑数组 -->
@@ -133,7 +133,7 @@
               <el-button type="primary" size="small" icon="el-icon-download" @click="downloadFiles"
                          :disabled="this.selectedRows.length === 0">下载
               </el-button>
-              <el-button type="primary" size="small" icon="el-icon-share" @click="shareFiles"
+              <el-button type="primary" size="small" icon="el-icon-share" @click="shareFile"
                          :disabled="this.selectedRows.length !== 1">分享
               </el-button>
               <el-button type="primary" size="small" icon="el-icon-delete" @click="deleteFiles"
@@ -158,6 +158,15 @@
               <el-button type="primary" size="small" icon="el-icon-delete" @click="deleteShare"
                          :disabled="this.selectedRows.length === 0">删除分享
               </el-button>
+            </div>
+
+            <!--    工具栏-->
+            <div v-if="showMume === 3 || showMume === 5" style="margin: 20px 10% 20px 20px; display: flex; justify-content: left">
+              <el-button type="primary" round size="small" icon="el-icon-copy-document" @click="() => {this.showMume = 5;this.test()}">求资料
+              </el-button>
+              <!-- <el-button type="primary" size="small" icon="el-icon-delete" @click="deleteFiles"
+                         :disabled="this.selectedRows.length === 0">删除
+              </el-button> -->
             </div>
 
             <MyModal :show="showRename" @close="showRename = false" style="z-index: 999">
@@ -257,8 +266,106 @@
               <el-table-column align="center" sortable prop="count" label="浏览次数" min-width="120"></el-table-column>
             </el-table>
 
+            <el-table ref="table" v-if="isTableVisible && showMume === 3" size="small" @selection-change="selectChange" :row-key="getKey"
+                      :data="collectTableData.slice((currentPage - 1) * pagesize, currentPage * pagesize)" style="width: 100%;">
+              <!-- 复选框 -->
+              <el-table-column align="center" type="selection" width="50" :reserve-selection="true"></el-table-column>
+              <!-- 文件名 -->
+              <el-table-column align="left" sortable prop="title" label="文件名" width="500">
+                <template v-slot="{ row }">
+                  <div :class="{ 'cut-row': isCut(row) }"  class="file-cell">
+                    <img :src="getFileIcon(row.title)" class="file-icon" alt="file icon" />
+                    <a id="filetext" href="javascript:void(0);" @click="openfile(row)">{{ row.title }}</a>
+                    <div class="hover-icons">
+                      <img src="@/assets/share.png" @click="shareFiles(row)" />
+                      <img src="@/assets/download.png" @click="downloadFiles(row)" />
+                      <el-dropdown @command="handleCommand">
+                        <img src="@/assets/more.png" @click="$event.stopPropagation()" @click.native="showDropdown(row)" />
+                        <el-dropdown-menu slot="dropdown">
+                        <button class="dropdown-button" @click="copySelected">Copy</button>
+                        <button class="dropdown-button" @click="cutSelected">Cut</button>
+                        <button class="dropdown-button" @click="pasteClipboard">Paste</button>
+                        </el-dropdown-menu>
+                      </el-dropdown>                    </div>
+                  </div>
+                </template>
+              </el-table-column>
+              <!-- 发送人数 -->
+              <el-table-column align="center" sortable prop="curNum" label="发送人数" min-width="120"></el-table-column>
+              <!-- 截止时间 -->
+              <el-table-column align="center" sortable prop="endTime" label="截止时间" min-width="120"></el-table-column>
+              <!-- 状态 -->
+              <el-table-column align="center" sortable prop="status" label="状态" min-width="120">
+                <template slot-scope="scope">
+                  <span>{{ scope.row.status === 1 ? '已转存' : '未转存' }}</span>
+                </template>
+              </el-table-column>
+            </el-table>
+          <div class="collect" style="background-image: url('../assets/cloud.png')">
+          </div>
+
+          <div v-if="showMume === 7" id="flag1-content" style="display: flex; flex-direction: column; justify-content: space-between; padding: 20px;">
+  <div style="width: 60%; border: 1px solid #ebeef5; padding: 15px; border-radius: 4px;">
+    <h4>文字链接预览</h4>
+    <p>大家好，在此收集——<span style="color: #409EFF;">{{ form.title }}</span></p>
+    <p>有效期截止到<span style="color: #409EFF;">{{ getExpiryDate() }}</span>，麻烦在此之前点击一下链接将文件发送给我，支持发送任意格式的文件，感谢~</p>
+    <!-- <p>链接：（<span style="color: #409EFF;">{{ linkText }}</span>）</p> -->
+    <p>链接：（<a :href="linkText" style="color: #409EFF;" @click="openLink">{{ linkText }}</a>）</p>
+    <p>来自：{{ getMaskedSignature() }}</p>
+  </div>
+  <div style="display: flex; justify-content: flex-start; margin-top: 20px;">
+    <el-button type="primary" @click="copyLink" style="margin-left: 240px;">复制文字链接</el-button>
+  </div>
+</div>
+
+<div v-if="showMume === 5" id="flag1-content" style="display: flex; flex-direction: column; justify-content: space-between; padding: 20px;">
+  <div style="display: flex; justify-content: space-between;">
+    <div style="width: 50%; margin-right: 0px">
+      <el-form :model="form" label-width="100px">
+        <el-form-item label="标题" required>
+          <el-input v-model="form.title" placeholder="请输入标题" style="max-width: 300px;"></el-input>
+        </el-form-item>
+        <el-form-item label="署名">
+          <el-input v-model="form.signature" placeholder="请输入署名" style="max-width: 300px;"></el-input>
+        </el-form-item>
+        <el-form-item label="链接有效期">
+          <div style="display: flex; align-items: center;">
+            <el-input v-model="form.expiry" placeholder="天数" type="number" style="max-width: 300px;"></el-input>
+            <span style="margin-left: 8px;">天</span>
+          </div>
+        </el-form-item>
+        <el-form-item label="最多允许">
+          <div style="display: flex; align-items: center;">
+            <el-input v-model="form.maxFiles" placeholder="人数" type="number" style="max-width: 300px;"></el-input>
+            <span style="margin-left: 8px;">人向我发邮件</span>
+          </div>
+        </el-form-item>
+        <el-form-item>
+          <div style="display: flex; align-items: center;">
+            <span style="color: black; margin-right: 4px;">将收集到的文件自动转存到：</span>
+            <span style="color: #409EFF; margin-right: 4px;">[来自：收集文件]</span>
+            <el-switch v-model="form.autoSave"></el-switch>
+          </div>
+        </el-form-item>
+      </el-form>
+    </div>
+    <div style="width: 40%; border: 1px solid #ebeef5; padding: 15px; border-radius: 4px; margin-top: -20px; margin-left: -30px; margin-bottom: 70px;">
+      <h4>文字链接预览</h4>
+      <p>大家好，在此收集——<span style="color: #409EFF;">{{ form.title }}</span></p>
+      <p>有效期截止到<span style="color: #409EFF;">{{ getExpiryDate() }}</span>，麻烦在此之前点击一下链接将文件发送给我，支持发送任意格式的文件，感谢~</p>
+      <p>链接：（<span style="color: #409EFF;">点击“完成”按钮生成此次文件收集的专属链接</span></p>
+      <p>来自：{{ getMaskedSignature() }}</p>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: flex-start; margin-top: 20px; margin-left: 400px;">
+    <el-button @click="Cancel" style="margin-right: 10px;">取消</el-button>
+    <el-button type="primary" @click="() => {this.Submit();}">完成</el-button>
+  </div>
+</div>
+
             <!-- 分页组件 -->
-            <el-pagination
+             <!-- 有改动 showMume = 6 -->
+            <el-pagination v-if="showMume !== 5 && showMume !== 6 && showMume != 7"
               style="margin-left: 10px; margin-top: 20px"
               @size-change="handleSizeChange"
               @current-change="handleCurrentChange"
@@ -269,6 +376,24 @@
               layout="total, sizes, prev, pager, next, jumper"
               :total="userTableData.length">
             </el-pagination>
+          </div>
+        </div>
+        <div class="gotodiv" v-if="showMume === 6">
+          <div class="gotocollection" style="height: 100%; display: flex; justify-content: center;padding-top: 100px ">
+              <div class="middlepart" style="display: flex; flex-direction: column;justify-content: center;">
+                <div class="middletitle" style="display: flex; justify-content: center;">
+                  <div style="font-size: 30px;">{{ begcontent }}</div>
+                </div>
+                <div class="middlefrom" style="display: flex; justify-content: center;padding-top: 10px">
+                  <div style="font-size: 20px;">来自{{ signer }}</div>
+                </div>
+                <div class="middletime" style="display: flex; justify-content: center;padding-top: 10px">
+                  <div style="font-size: 15px;">{{ leftday }}后过期     限{{ maxNum }}人发送</div>
+                </div>
+                <div class="middlebutton" style="display: flex ;justify-content: center;padding-top: 30px;">
+                  <el-button type="primary" class="submitbtn" round @click="gotochoose" >选择文件</el-button>
+                </div>
+              </div>
           </div>
         </div>
       </div>
@@ -282,9 +407,12 @@
         </el-dropdown-menu>
       </el-dropdown>
     </div>
+    <!-- 。sync是updata isshare的语法糖用于监听这个isshare变化 -->
+    <ShareCom :isshare.sync="isshare" :sharefileid="sharefileid" :sharefilename="sharefilename"></ShareCom>
   </div>
 </template>
 <script>
+import ShareCom from './ShareCom.vue'
 import {
   createDir,
   deleteFile,
@@ -292,21 +420,34 @@ import {
   renameFile,
   forCates,
   getShareFile,
+  getCollection,
   getDownloadFile,
   cancelShare
 } from '@/api/file'
 import MyModal from '@/components/myModal.vue'
 import axios from 'axios'
 export default {
-  components: { MyModal },
+  components: { MyModal, ShareCom },
   data () {
     return {
+      username: '',
+      form: {
+        title: '',
+        signature: '',
+        expiry: 7,
+        maxFiles: 100,
+        autoSave: true
+      },
+      linkText: '点击“完成”按钮生成此次文件收集的专属链接',
+      begcontent: '求期末资料',
       // 面包屑渲染数据
       list: [],
       // 渲染文件列表数组
       userTableData: [],
       // 渲染分享列表数组
       shareTableData: [],
+      // 分页组件初始页面
+      collectTableData: [],
       // 分页组件初始页面
       currentPage: 1,
       // 每一页的总条数 这里我默认设置成10条每一个页面
@@ -334,15 +475,201 @@ export default {
       // New data property to track the clicked row
       clickedRow: null,
       cutFiles: [], // Array to store IDs of cut files
-      showMume: 1
+      showMume: 1,
+      // 分享的文件名和文件id
+      sharefileid: '',
+      sharefilename: '',
+      isshare: false,
+      // lby加
+      id: ''
     }
   },
+  computed: {
+    activeIndex () {
+      if (this.showMume === 6) {
+        return '2-1'
+      }
+      return ''
+    }
+  },
+  watch: {
+    '$route' (to, from) {
+      // console.log("watch: " + to.path);
+      this.id = to.params.surl
+      this.showMume = to.params.showMume
+      console.log(this.id)
+      console.log(this.showMume)
+      if (this.showMume === 6) {
+        this.getCollectInfo()
+      }
+    }
+  },
+  // lby改
   async created () {
+    // this.id = this.$route.params.surl;
+    // this.showMume = this.id ? this.$route.params.showMume : 1;
+    // console.log(this.id)
+    this.getUserName()
+    this.showMume = 1
+    console.log(this.showMume)
     await this.allfile()
     await this.getShareHistory()
     this.getUserInfo()
   },
   methods: {
+    test () {
+      console.log(this.showMume)
+    },
+    openLink (event) {
+      event.preventDefault()
+      window.location.href = this.linkText
+    },
+    copyLink () {
+      // 复制链接到剪切板
+      navigator.clipboard.writeText(this.linkText).then(() => {
+        this.$message({
+          message: '链接已复制到剪切板！',
+          type: 'success',
+          duration: 2000
+        })
+      })
+    },
+    Cancel () {
+    // 取消操作的逻辑
+      this.showMume = 3
+      this.selectedRows = []
+      this.clearTableSelection()
+      this.getCollectionfiles()
+    },
+    CCancel () {
+    // 取消操作的逻辑
+      this.showMume = 5
+      this.selectedRows = []
+      this.clearTableSelection()
+      this.getCollectionfiles()
+    },
+    async Submit () {
+      this.showMume = 7
+      try {
+        const response = await axios.post('http://47.97.32.241:8080/file/collect/create', {
+          title: this.form.title,
+          duration: this.form.expiry,
+          maxNum: this.form.maxFiles,
+          signer: this.form.signature,
+          autoCollect: this.form.autoSave ? 0 : 1
+        }, {
+          headers: {
+            Authorization: this.token
+          }
+        })
+
+        if (response.data.code === 200) {
+          const link = response.data.data.link
+          this.linkText = `http://localhost:8080/#/collect/${link}`
+          if (this.form.autoSave) {
+            await this.createAutoSaveFolders()
+          }
+        } else {
+          this.$message({
+            message: response.data.message || '生成链接失败',
+            type: 'error',
+            duration: 2000
+          })
+        }
+      } catch (error) {
+        this.$message({
+          message: '服务器错误，请稍后再试',
+          type: 'error',
+          duration: 2000
+        })
+      }
+    },
+    async createAutoSaveFolders () {
+      try {
+        // Create root folder if it doesn't exist
+        const rootFolderResponse = await createDir(this.token, null, '来自：收集文件')
+        const rootFolderId = rootFolderResponse.data.data.userFileId
+
+        // Create subfolder with the title name
+        await createDir(this.token, rootFolderId, this.form.title)
+      } catch (error) {
+        this.$message({
+          message: '自动转存文件夹创建失败',
+          type: 'error',
+          duration: 2000
+        })
+      }
+    },
+    getUserName () {
+      fetch('http://47.97.32.241:8080/user/info', {
+        method: 'GET',
+        headers: {
+          Authorization: this.$store.state.usertoken
+        }
+      })
+        .then(res => {
+          return res.json()
+        })
+        .then(data => {
+          if (data.code === 200) {
+            this.username = data.data.username
+            // 将用户名赋值给表单中的signature字段
+            this.form.signature = this.username
+          } else {
+            console.error('Failed to get username')
+            console.log(Response.status)
+          }
+        })
+    },
+    getExpiryDate () {
+      const now = new Date()
+      now.setDate(now.getDate() + parseInt(this.form.expiry))
+      return now.toLocaleString('zh-CN', { hour12: false })
+    },
+    getMaskedSignature () {
+      if (this.form.signature.length < 4) {
+        return this.form.signature
+      }
+      return `${this.form.signature.slice(0, 2)}*****${this.form.signature.slice(-2)}`
+    },
+    // lby加
+    gotochoose () {
+      this.$router.push({ name: 'collection', params: { surl: this.$route.params.surl } })
+      console.log('goto:' + this.$route.params.surl)
+    },
+    getCollectInfo () {
+      console.log('get触发')
+      fetch('http://47.97.32.241:8080/file/collect/get?link=' + this.$route.params.surl, {
+        method: 'GET',
+        headers: {
+          Authorization: this.$store.state.usertoken
+        }
+      })
+        .then(response => {
+          if (response.ok) {
+            return response.json()
+          } else {
+            throw new Error('获取用户信息失败')
+          }
+        })
+        .then(data => {
+          if (data && data.code === 200 && data.data) {
+            const Info = data.data
+            // console.log(userInfo)
+            // console.log(this)// 调试 this 的值
+            this.begcontent = Info.title
+            // document.getElementById('avatar-preview').style.backgroundImage = `url(${userInfo.avatar})`
+            this.signer = Info.signer
+            this.leftday = Info.endTime
+            this.maxNum = Info.maxNum
+          } else {
+          // console.error(data.code)
+          }
+        })
+        .catch(error => {
+          console.error('发生错误:', error.message)
+        })
+    },
     // 初始页currentPage、初始每页数据数pagesize和数据data
     handleSizeChange (size) {
       this.pagesize = size
@@ -513,6 +840,16 @@ export default {
         }
       }
     },
+    async getCollectionfiles () {
+      // console.log('触发')
+      // 重新获取所有的文件
+      const res = await getCollection(this.token, 1, 100)
+      console.log(res)
+      this.collectTableData = res.data.data.list
+      console.log(this.userTableData)
+      // console.log(res.data.data.list)
+      this.list = [] // 清空面包屑导航
+    },
     // 获取转存记录
     async getDownloadHistory () {
       const res = await getDownloadFile(this.token, 1, 100)
@@ -541,18 +878,34 @@ export default {
     // 重命名文件
     async renameFile () {
       const userFileId = this.selectedRows[0].userFileId
-      const newName = this.newName
+      let newName = this.newName
+      if (this.selectedRows[0].fileName.contain('.')) {
+        const suffix = this.selectedRows[0].fileName.split('.').pop()
+        newName = this.newName + '.' + suffix
+      }
+      console.log(newName)
       const res = await renameFile(this.token, userFileId, newName)
       console.log(res)
       if (res.data.code === 200) {
         // 重命名成功后重新获取文件列表
         const res = await getFile(this.token, 1, 100, this.list.length === 0 ? null : this.list[this.list.length - 1].userFileId)
         this.userTableData = res.data.data.list
+      } else if (res.data.code === 444) {
+        const newname = res.data.data
+        await renameFile(this.token, userFileId, newname)
+        const result = await getFile(this.token, 1, 100, this.list.length === 0 ? null : this.list[this.list.length - 1].userFileId)
+        this.userTableData = result.data.data.list
+        this.$message({
+          message: '文件名已存在，重命名为' + newname,
+          type: 'warning',
+          duration: 2000
+        })
       }
       this.showRename = false
       this.newName = ''
       this.selectedRows = []
       this.clearTableSelection()
+      await this.allfile()
     },
     // 显示新建文件夹模态框 LYX
     showNewDia () {
@@ -581,6 +934,16 @@ export default {
         // 创建文件夹成功后重新获取文件列表
         const res = await getFile(this.token, 1, 100, this.list.length === 0 ? null : this.list[this.list.length - 1].userFileId)
         this.userTableData = res.data.data.list
+      } else if (res.data.code === 444) {
+        const newname = res.data.data
+        await createDir(this.token, pid, newname)
+        const result = await getFile(this.token, 1, 100, this.list.length === 0 ? null : this.list[this.list.length - 1].userFileId)
+        this.userTableData = result.data.data.list
+        this.$message({
+          message: '文件夹名已存在，重命名为' + newname,
+          type: 'warning',
+          duration: 2000
+        })
       }
       this.showNew = false
       this.newName = ''
@@ -600,7 +963,7 @@ export default {
         }
         try {
           const response = await axios({
-            url: 'http://8.134.178.176:8080/file/download',
+            url: 'http://47.97.32.241:8080/file/download',
             method: 'GET',
             responseType: 'blob', // Important for downloading files
             params: {
@@ -625,13 +988,20 @@ export default {
       }
     },
     // 分享文件'
-    shareFiles (row = 'null') {
-      if (row === 'null') {
-        row = this.selectedRows[0]
-      }
-      console.log(row)
+    shareFiles (row) {
+      console.log(row.fileName, row.userFileId)
+      this.sharefileid = row.userFileId
+      this.sharefilename = row.fileName
+      this.isshare = true
+      console.log(this.isshare)
     },
-    // 移动文件
+    // 复选框分享文件
+    shareFile () {
+      console.log(this.selectedRows[0].fileName)
+      this.sharefileid = this.selectedRows[0].userFileId
+      this.sharefilename = this.selectedRows[0].fileName
+      this.isshare = true
+    }, // 移动文件
     moveFiles () {
       console.log('移动文件')
     },
@@ -672,7 +1042,6 @@ export default {
       }
       this.selectedRows = []
       this.clearTableSelection()
-      this.allfile()
     },
     // 取消复选框 Liu Zijun
     clearTableSelection () {
@@ -732,7 +1101,7 @@ export default {
         userFileId: this.clipboard.files,
         pid: pid
       }
-      axios.post('http://8.134.178.176:8080/file/copy?mode=1', requestData, {
+      axios.post('http://47.97.32.241:8080/file/copy?mode=1', requestData, {
         headers: { Authorization: this.$store.state.usertoken }
       })
         .then(response => {
@@ -768,7 +1137,7 @@ export default {
     },
     getUserInfo () {
       // console.log("sdffdf");
-      fetch('http://8.134.178.176:8080/user/info', {
+      fetch('http://47.97.32.241:8080/user/info', {
         method: 'GET',
         headers: {
           Authorization: this.$store.state.usertoken
@@ -1057,4 +1426,25 @@ el-menu-item {
 .highlight {
   color: red;
 }
+/* lby新增 */
+.gotodiv{
+  width: 100%;
+  height: 100%;
+  background-image: url(../assets/cloud.png);
+}
+.middlepart{
+  height: 30%;
+  width: 50%;
+  background-color: white;
+  border-radius: 5%;
+}
+/* lby改 */
+.submitbtn{
+        border-radius: 60cap !important;
+        font-size: 30px;
+        box-shadow: 0 0 25px #cac6c6;
+        width: 40%;
+        height: 44px;
+        font-size: 25px;
+    }
 </style>

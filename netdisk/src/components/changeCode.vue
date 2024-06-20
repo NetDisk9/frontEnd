@@ -37,7 +37,7 @@ export default {
         newPassword: this.newPassword
       }
 
-      fetch('http://8.134.178.176:8080/user/update/password', {
+      fetch('http://47.97.32.241:8080/user/update/password', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ export default {
           if (response.code === 200) {
             console.log('更新密码成功:', response)
             alert('密码更新成功！请重新登录！')
-            window.location.href = 'http://8.134.178.176:8080/user/login'
+            window.location.href = 'http://47.97.32.241:8080/user/login'
           } else if (response.code === 403) {
             throw new Error('用户名或密码错误')
           } else if (response.code === 421) {

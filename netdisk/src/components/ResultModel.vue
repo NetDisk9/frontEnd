@@ -1,5 +1,6 @@
 <template>
-    <el-dialog :visible.sync="visible" :title="'分享文件：' + fileName" width="500px">
+  <!-- 关闭请求需要进行子传父绑定 -->
+    <el-dialog :visible.sync="visible" :title="'分享文件：' + fileName" width="500px" @close="handleClose">
         <div class="share">
           <span>链接分享</span>
         </div>
@@ -59,8 +60,8 @@ export default {
     }
   },
   methods: {
-    close () {
-      this.$emit('update:visible', false)
+    handleClose () {
+      this.$emit('close-result-modal')
     },
     copyLink () {
       const fullText = `链接：${this.link} 提取码：${this.code}`

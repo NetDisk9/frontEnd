@@ -14,6 +14,7 @@ import filelist from '@/components/fileList.vue'
 import savePage from '@/views/savePage.vue'
 import save from '@/views/saveView.vue'
 import share from '@/components/ShareCom.vue'
+import fileCollection from '@/components/fileCollection.vue'
 
 Vue.use(VueRouter)
 
@@ -55,6 +56,20 @@ const router = new VueRouter({
       path: '/save/:surl',
       name: 'save',
       component: save
+    },
+    {
+      path: '/collect/:surl',
+      component: filelist,
+      beforeEnter: (to, from, next) => {
+        // 将 showmenu 设置为 6
+        to.params.showMume = 6
+        next()
+      }
+    },
+    {
+      path: '/collection/:surl',
+      name: 'collection',
+      component: fileCollection
     },
     // 邮箱登陆路由配置
     {
